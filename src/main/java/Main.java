@@ -1,5 +1,3 @@
-package app;
-
 import java.nio.file.Paths;
 
 public class Main {
