@@ -1,2 +1,8 @@
-/target/**
 /.idea
+target/
+.settings/
+.project
+.classpath
+.idea/
+*.iml
+.vscode/
