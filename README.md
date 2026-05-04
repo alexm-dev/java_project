@@ -1,7 +1,7 @@
 ## Java project
 
 ```sh
-git clone https://github.com/alexm-dev/java_project
+git clone https://github.com/alexm-dev/ShareSpace
 ```
 
 ## Environment setup:
