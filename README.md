@@ -28,8 +28,12 @@ mvn compile
 mvn exec:java
 ```
 
-Our Stack
+Our Stack so far:  
+
+Backend:
 Sqlite  
 JDBC  
+
+Frontend:
 JavaFX  
 
