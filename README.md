@@ -30,10 +30,10 @@ mvn exec:java
 
 Our Stack so far:  
 
-Backend:
+Backend:  
 Sqlite  
 JDBC  
 
-Frontend:
+Frontend:  
 JavaFX  
 
