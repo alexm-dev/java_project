@@ -28,3 +28,8 @@ mvn compile
 mvn exec:java
 ```
 
+Our Stack
+Sqlite
+JDBC
+JavaFX
+
