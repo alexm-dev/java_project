@@ -29,7 +29,7 @@ mvn exec:java
 ```
 
 Our Stack
-Sqlite
-JDBC
-JavaFX
+Sqlite  
+JDBC  
+JavaFX  
 
