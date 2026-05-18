@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     created_time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status TEXT,
-    avg_rating REAL DEFAULT 0
+    rating_id INTEGER NOT NULL,
+
 );
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -28,6 +29,7 @@ CREATE TABLE IF NOT EXISTS assets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     owner_id INTEGER NOT NULL,
     sub_category_id INTEGER NOT NULL,
+    model TEXT NOT NULL,
     description TEXT,
     condition TEXT,
     asset_location_id INTEGER NOT NULL,
@@ -38,18 +40,18 @@ CREATE TABLE IF NOT EXISTS assets (
     FOREIGN KEY (sub_category_id) REFERENCES sub_categories(id)
 );
 
-CREATE TABLE IF NOT EXISTS locations (
+CREATE TABLE IF NOT EXISTS location (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     city TEXT NOT NULL,
     postal_code TEXT NOT NULL,
-    district TEXT NOT NULL,
+    district TEXT,
     street_address TEXT NOT NULL,
     country TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE IF NOT EXISTS role (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE CHECK (name IN ('lender', 'renter'))
+    name TEXT NOT NULL UNIQUE CHECK (name IN ('lender', 'renter', 'both'))
 );
 
 CREATE TABLE IF NOT EXISTS user_roles(
@@ -88,7 +90,6 @@ CREATE TABLE IF NOT EXISTS ratings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     booking_id INTEGER NOT NULL,
     reviewer_id INTEGER NOT NULL,
-    asset_id INTEGER,
     rated_user_id INTEGER,
     rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment TEXT,
@@ -96,10 +97,5 @@ CREATE TABLE IF NOT EXISTS ratings (
 
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE RESTRICT,
     FOREIGN KEY (reviewer_id) REFERENCES users(id) ON DELETE RESTRICT,
-    FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE RESTRICT,
     FOREIGN KEY (rated_user_id) REFERENCES users(id) ON DELETE RESTRICT,
-    CHECK (
-        (asset_id IS NOT NULL AND rated_user_id IS NULL)
-        OR (asset_id IS NULL AND rated_user_id IS NOT NULL)
-    )
 );
