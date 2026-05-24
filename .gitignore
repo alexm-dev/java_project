@@ -6,6 +6,7 @@ out/
 *.war
 *.ear
 .settings/
+/database
 .project
 .classpath
 .idea/
