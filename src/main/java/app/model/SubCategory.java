@@ -3,21 +3,21 @@ package app.model;
 public class SubCategory {
     private int id;
     private String name;
-    private int categoryID;
+    private int categoryId;
 
-    public SubCategory(int id, String name, int categoryID) {
+    public SubCategory(int id, String name, int categoryId) {
         this.id = id;
         this.name = name;
-        this.categoryID = categoryID;
+        this.categoryId = categoryId;
     }
 
-    public SubCategory(String name, int categoryID) {
+    public SubCategory(String name, int categoryId) {
         this.name = name;
-        this.categoryID = categoryID;
+        this.categoryId = categoryId;
     }
 
     // Getters
     public int getId() { return id; }
     public String getName() { return name; }
-    public int getCategoryID() { return categoryID; }
+    public int getCategoryID() { return categoryId; }
 }
