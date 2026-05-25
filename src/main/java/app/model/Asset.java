@@ -1,0 +1,49 @@
+package app.model;
+
+public class Asset {
+    private int id;
+    private int ownerId;
+    private int subCategoryId;
+    private String model;
+    private String description;
+    private String condition;
+    private int assetLocationId;
+    private double dailyRate;
+
+    public Asset(int id, int ownerId, int subCategoryId, String model, String description, String condition, int assetLocationId, double dailyRate) {
+        this.id = id;
+        this.ownerId = ownerId;
+        this.subCategoryId = subCategoryId;
+        this.model = model;
+        this.description = description;
+        this.condition = condition;
+        this.assetLocationId = assetLocationId;
+        this.dailyRate = dailyRate;
+    }
+
+    public Asset(int ownerId, int subCategoryId, String model, String description, String condition, int assetLocationId, double dailyRate) {
+        this.ownerId = ownerId;
+        this.subCategoryId = subCategoryId;
+        this.model = model;
+        this.description = description;
+        this.condition = condition;
+        this.assetLocationId = assetLocationId;
+        this.dailyRate = dailyRate;
+    }
+
+    public int getId() { return id; }
+    public int getOwnerId() { return ownerId; }
+    public int getSubCategoryId() { return subCategoryId; }
+    public String getModel() { return model; }
+    public String getDescription() { return description; }
+    public String getCondition() { return condition; }
+    public int getAssetLocationId() { return assetLocationId; }
+    public double getDailyRate() { return dailyRate; }
+
+
+    public void setModel(String model) { this.model = model; }
+    public void setDescription(String description) { this.description = description; }
+    public void setCondition(String condition) { this.condition = condition; }
+    public void setAssetLocationId(int assetLocationId) { this.assetLocationId = assetLocationId; }
+    public void setDailyRate(double dailyRate) { this.dailyRate = dailyRate; }
+}
