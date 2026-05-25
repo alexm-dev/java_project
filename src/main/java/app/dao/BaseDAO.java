@@ -24,6 +24,7 @@ public abstract class BaseDAO<T, ID> {
 
     /**
      * Creates a new entity in the database.
+     * The generated id is written back onto the entity via its setter.
      *
      * @param entity Generic entity to be created.
      * @return true if the entity was created successfully, false otherwise.

@@ -43,10 +43,10 @@ public class User {
     public String getCreatedTime() { return createdTime; }
     public String getStatus() { return status; }
 
-    // Setters (only for fields that can be updated)
+    // Setters
+    public void setId(int id) { this.id = id; }
     public void setUsername(String username) { this.username = username; }
     public void setEmail(String email) { this.email = email; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public void setStatus(String status) { this.status = status; }
-    // createdTime and id are managed by the DB and should not be set manually
 }
