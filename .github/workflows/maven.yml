@@ -28,6 +28,7 @@ jobs:
       uses: github/codeql-action/init@v4
       with:
         languages: java
+        build-mode: none
 
     - name: Build with Maven
       run: mvn -B verify
@@ -52,7 +53,9 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: app
-        path: target/!(original-*).jar
+        path: |
+          target/*.jar
+          !target/original-*.jar
 
     - name: Upload JavaDocs
       uses: actions/upload-artifact@v7
