@@ -6,7 +6,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/* Database utility class for managing DB connection and initialization.
+/**
+ * Database utility class for managing DB connection and initialization.
  * Uses SQLite for simplicity and jdbc for DB driver.
  */
 public class Database {
@@ -20,7 +21,8 @@ public class Database {
 
     private static Connection connection;
 
-    /* initialize method to set up databse schema from schema.sql.
+    /**
+     * Initialize method to set up databse schema from schema.sql.
      * Is called from Main.java at application startup.
      */
     public static void initialize() {
@@ -39,7 +41,9 @@ public class Database {
         }
     }
 
-    /* getConnection method to provide a singleton DB connection. */
+    /**
+     * getConnection method to provide a singleton DB connection.
+     */
     public static Connection getConnection() {
         if (connection == null) {
             // v1 ensure the database/ directory exists before SQLite tries to create the file

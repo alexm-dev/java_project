@@ -1,6 +1,7 @@
 package app.model;
 
-/* Location class representing the locations table in the database.
+/**
+ * Location class representing the locations table in the database.
  * This class represents a physical location. */
 public class Location {
     private int id;

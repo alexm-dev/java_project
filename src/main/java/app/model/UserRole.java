@@ -1,6 +1,8 @@
 package app.model;
 
-/* UserRole class represents the association between a user and a role in the system.*/
+/**
+ * UserRole class represents the association between a user and a role in the system.
+ */
 public class UserRole {
     private int userId;
     private int roleId;

@@ -1,6 +1,6 @@
 package app.model;
 
-/*
+/**
  * User model representing the User table in the database
  * Fields:
  * - id: int (primary key, auto-increment)

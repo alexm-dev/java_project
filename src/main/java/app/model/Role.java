@@ -1,9 +1,7 @@
 package app.model;
 
-/* Role class representing the roles table from the DB.
- * Fields:
- * - id: int (primary key, auto-incremented)
- * - name: String (unique, not null)
+/**
+ * Role class representing the roles table from the DB.
  * */
 public class Role {
     private int id;
