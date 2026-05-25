@@ -38,6 +38,7 @@ public class Location {
     public String getCountry() { return country; }
 
     // Setters
+    public void setId(int id) { this.id = id; }
     public void setCity(String city) { this.city = city; }
     public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
     public void setDistrict(String district) { this.district = district; }

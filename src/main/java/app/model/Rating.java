@@ -31,6 +31,9 @@ public class Rating {
         this.comment = comment;
     }
 
+    // Setter for the DB-generated id only, ratings are otherwise immutable
+    public void setId(int id) { this.id = id; }
+
     // Getters
     public int getId() { return id; }
     public int getBookingId() { return bookingId; }

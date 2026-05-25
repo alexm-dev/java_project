@@ -58,6 +58,7 @@ public class Booking {
     public String getUpdatedTime() { return updatedTime; }
 
     // Setters
+    public void setId(int id) { this.id = id; }
     public void setStatus(String status) { this.status = status; }
     public void setTotalCost(double totalCost) { this.totalCost = totalCost; }
     public void setUpdatedTime(String updatedTime) { this.updatedTime = updatedTime; }

@@ -56,6 +56,7 @@ public class Asset {
     public double getDailyRate() { return dailyRate; }
 
     // Setters
+    public void setId(int id) { this.id = id; }
     public void setModel(String model) { this.model = model; }
     public void setDescription(String description) { this.description = description; }
     public void setCondition(String condition) { this.condition = condition; }
