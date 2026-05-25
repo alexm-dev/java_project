@@ -32,11 +32,36 @@ jobs:
     - name: Build with Maven
       run: mvn -B verify
 
+    - name: Generate JavaDocs
+      run: mvn -B javadoc:javadoc
+
     - name: Analyze
       uses: github/codeql-action/analyze@v4
+
+    - name: Stage submission
+      run: |
+        mkdir -p submission/ShareSpace
+        cp -r src pom.xml submission/ShareSpace/
+        cp README.md LICENSE submission/ShareSpace/ 2>/dev/null || true
+        cp -r target/reports/apidocs submission/ShareSpace/javadoc
+        # copy only the shaded fat JAR, skip the maven-jar-plugin "original-*.jar"
+        find target -maxdepth 1 -name "*.jar" ! -name "original-*" -exec cp {} submission/ShareSpace/ \;
+        cp doc/sharespace_doc.pdf submission/ShareSpace/ 2>/dev/null || true
 
     - name: Upload JAR
       uses: actions/upload-artifact@v7
       with:
         name: app
-        path: target/*.jar
+        path: target/!(original-*).jar
+
+    - name: Upload JavaDocs
+      uses: actions/upload-artifact@v7
+      with:
+        name: javadocs
+        path: target/reports/apidocs/
+
+    - name: Upload Submission Package
+      uses: actions/upload-artifact@v7
+      with:
+        name: ShareSpace-submission
+        path: submission/ShareSpace/
