@@ -1,5 +1,13 @@
 package app.model;
 
+/**
+ * Represents a booking made by a renter for an asset.
+ *
+ * Each booking has an associated asset, renter, start and end time, status, total cost,
+ * and timestamps for when the booking was created and last updated.
+ *
+ * The Booking class provides constructors for creating new bookings and getters/setters
+ */
 public class Booking {
     private int id;
     private int assetId;
@@ -11,6 +19,9 @@ public class Booking {
     private String createdTime;
     private String updatedTime;
 
+    /**
+     * Constructor for creating a Booking with an ID (used when retrieving from the database).
+     */
     public Booking(int id, int assetId, int renterId, String startTime, String endTime, String status, double totalCost, String createdTime, String updatedTime) {
         this.id = id;
         this.assetId = assetId;
@@ -23,6 +34,9 @@ public class Booking {
         this.updatedTime = updatedTime;
     }
 
+    /**
+     * Constructor for creating a new Booking without an ID (used when inserting into the database).
+     */
     public Booking(int assetId, int renterId, String startTime, String endTime, String status, double totalCost) {
         this.assetId = assetId;
         this.renterId = renterId;

@@ -1,14 +1,7 @@
 package app.model;
 
 /**
- * User model representing the User table in the database
- * Fields:
- * - id: int (primary key, auto-increment)
- * - username: String (unique, not null)
- * - email: String (unique, not null)
- * - passwordHash: String (not null)
- * - createdTime: String (timestamp, not null)
- * - status: String (e.g., "active", "inactive")
+ * User model representing the User table in the database.
  */
 public class User {
     private int id;
@@ -18,7 +11,9 @@ public class User {
     private String createdTime;
     private String status;
 
-    // Constructor to load from DB
+    /**
+     * Constructor to load from the DB.
+     */
     public User(int id, String username, String email, String passwordHash, String createdTime, String status) {
         this.id = id;
         this.username = username;
@@ -28,7 +23,9 @@ public class User {
         this.status = status;
     }
 
-    // Constructor to create a new User in the DB (generates id, createdTime)
+    /**
+     * Constructor to create a new User in the DB (generates id, createdTime)
+     */
     public User(String username, String email, String passwordHash) {
         this.username = username;
         this.email = email;

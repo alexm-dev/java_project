@@ -2,7 +2,8 @@ package app.model;
 
 /**
  * Location class representing the locations table in the database.
- * This class represents a physical location. */
+ * This class represents a physical location of an asset.
+ */
 public class Location {
     private int id;
     private String city;

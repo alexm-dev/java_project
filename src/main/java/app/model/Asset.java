@@ -1,5 +1,13 @@
 package app.model;
 
+/**
+ * Represents an asset that can be rented on the platform.
+ *
+ * Each asset has an owner, belongs to a subcategory, and has details like
+ * model, description, condition, location, and a daily rate.
+ *
+ * The Asset class provides constructors for creating new assets and getters/setters
+ */
 public class Asset {
     private int id;
     private int ownerId;
@@ -10,6 +18,9 @@ public class Asset {
     private int assetLocationId;
     private double dailyRate;
 
+    /**
+     * Constructor for creating an Asset with a ID (used when retrieving from the database).
+     */
     public Asset(int id, int ownerId, int subCategoryId, String model, String description, String condition, int assetLocationId, double dailyRate) {
         this.id = id;
         this.ownerId = ownerId;
@@ -21,6 +32,9 @@ public class Asset {
         this.dailyRate = dailyRate;
     }
 
+    /**
+     * Constructor for creating a new Asset without an ID (used when inserting into the database).
+     */
     public Asset(int ownerId, int subCategoryId, String model, String description, String condition, int assetLocationId, double dailyRate) {
         this.ownerId = ownerId;
         this.subCategoryId = subCategoryId;
@@ -31,6 +45,7 @@ public class Asset {
         this.dailyRate = dailyRate;
     }
 
+    // Getters
     public int getId() { return id; }
     public int getOwnerId() { return ownerId; }
     public int getSubCategoryId() { return subCategoryId; }
@@ -40,7 +55,7 @@ public class Asset {
     public int getAssetLocationId() { return assetLocationId; }
     public double getDailyRate() { return dailyRate; }
 
-
+    // Setters
     public void setModel(String model) { this.model = model; }
     public void setDescription(String description) { this.description = description; }
     public void setCondition(String condition) { this.condition = condition; }

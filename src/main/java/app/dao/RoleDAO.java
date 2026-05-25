@@ -8,8 +8,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data Access Object for Role entity.
+ * Extends BaseDAO
+ * Provides methods to create, find, and list roles in the database.
+ */
 public class RoleDAO extends BaseDAO<Role, Integer> {
 
+    /**
+     * Creates a new role in the database.
+     *
+     * @param role The role to be created.
+     * @return true if the role was created successfully, false otherwise.
+     */
     @Override
     public boolean create(Role role) {
         String sql = "INSERT INTO roles (name) VALUES (?)";
@@ -21,6 +32,12 @@ public class RoleDAO extends BaseDAO<Role, Integer> {
         }
     }
 
+    /**
+     * Finds a role by its ID.
+     *
+     * @param id The id of the role to be found.
+     * @return The role if found, null otherwise.
+     */
     @Override
     public Role findById(Integer id) {
         String sql = "SELECT id, name FROM roles WHERE id = ?";
@@ -37,6 +54,11 @@ public class RoleDAO extends BaseDAO<Role, Integer> {
         return null;
     }
 
+    /**
+     * Finds all roles in the database.
+     *
+     * @return A list of all roles.
+     */
     @Override
     public List<Role> findAll() {
         List<Role> roles = new ArrayList<>();
@@ -52,16 +74,30 @@ public class RoleDAO extends BaseDAO<Role, Integer> {
         return roles;
     }
 
+    /**
+     * Role does not implement update functionality.
+     * Roles are never updated.
+     */
     @Override
     public boolean update(Role role) {
         return false;
     }
 
+    /**
+     * Role does not implement delete functionality.
+     * Roles are never deleted.
+     */
     @Override
     public boolean delete(Integer id) {
         return false;
     }
 
+    /**
+     * Finds a role by its name.
+     *
+     * @param name The name of the role to be found.
+     * @return The role if found, null otherwise.
+     */
     public Role findByName(String name) {
         String sql = "SELECT id, name FROM roles WHERE name = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {

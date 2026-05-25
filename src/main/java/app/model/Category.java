@@ -1,5 +1,9 @@
 package app.model;
 
+/**
+ * Represents a category of assets on sharespace.
+ * Implements only getters as categories are not expected to be changed.
+ */
 public class Category {
     private int id;
     private String name;
@@ -16,6 +20,7 @@ public class Category {
         this.description = description;
     }
 
+    // Getters
     public int getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }

@@ -9,8 +9,21 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data Access Object for User entity.
+ * Provides methods to create, find, update, and delete users in the database.
+ * Also includes methods to find users by email and username.
+ * Maps ResultSet rows to User objects
+ */
 public class UserDAO extends BaseDAO<User, Integer> {
 
+    /**
+     * Creates a new user in the database.
+     * The generated id is written back onto the user via its setter.
+     *
+     * @param user The user to be created.
+     * @return true if the user was created successfully, false otherwise.
+     */
     @Override
     public boolean create(User user) {
         String sql = "INSERT INTO users (username, email, password_hash, status) VALUES (?, ?, ?, ?)";
@@ -33,6 +46,12 @@ public class UserDAO extends BaseDAO<User, Integer> {
         }
     }
 
+    /**
+     * Finds a user by their ID.
+     *
+     * @param id The id of the user to be found.
+     * @return The user if found, null otherwise.
+     * */
     @Override
     public User findById(Integer id) {
         String sql = "SELECT id, username, email, password_hash, created_time, status FROM users WHERE id = ?";
@@ -49,6 +68,11 @@ public class UserDAO extends BaseDAO<User, Integer> {
         return null;
     }
 
+    /**
+     * Finds all users in the database.
+     *
+     * @return A list of all users in the database.
+     */
     @Override
     public List<User> findAll() {
         List<User> users = new ArrayList<>();
@@ -63,6 +87,12 @@ public class UserDAO extends BaseDAO<User, Integer> {
         return users;
     }
 
+    /**
+     * Updates an existing user in the database.
+     *
+     * @param user The user object with updated information.
+     * @return true if the user was updated successfully, false otherwise.
+     */
     @Override
     public boolean update(User user) {
         String sql = "UPDATE users SET username = ?, email = ?, password_hash = ?, status = ? WHERE id = ?";
@@ -79,6 +109,12 @@ public class UserDAO extends BaseDAO<User, Integer> {
         }
     }
 
+    /**
+     * Deletes a user by their ID.
+     *
+     * @param id The id of the user to be deleted.
+     * @return true if the user was deleted successfully, false otherwise.
+     */
     @Override
     public boolean delete(Integer id) {
         String sql = "DELETE FROM users WHERE id = ?";
@@ -91,6 +127,12 @@ public class UserDAO extends BaseDAO<User, Integer> {
         }
     }
 
+    /**
+     * Finds a user by their set email.
+     *
+     * @param email The email of the user to be found.
+     * @return The user if found, null otherwise.
+     */
     public User findByEmail(String email) {
         String sql = "SELECT id, username, email, password_hash, created_time, status FROM users WHERE email = ?";
 
@@ -105,6 +147,12 @@ public class UserDAO extends BaseDAO<User, Integer> {
         return null;
     }
 
+    /**
+     * Finds a user by their set username.
+     *
+     * @param username The username of the user to be found.
+     * @return The user if found, null otherwise.
+     */
     public User findByUsername(String username) {
         String sql = "SELECT id, username, email, password_hash, created_time, status FROM users WHERE username = ?";
 
@@ -119,6 +167,13 @@ public class UserDAO extends BaseDAO<User, Integer> {
         return null;
     }
 
+    /**
+     * Maps a ResultSet row to a User object.
+     *
+     * @param rs The ResultSet containing the user data.
+     * @return A User object populated with data from the ResultSet.
+     * @throws SQLException If an SQL error occurs while accessing the ResultSet.
+     */
     private User mapRow(ResultSet rs) throws SQLException {
         return new User(
             rs.getInt("id"),

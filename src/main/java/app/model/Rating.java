@@ -1,5 +1,9 @@
 package app.model;
 
+/**
+ * Rating class representing the ratings table in the database.
+ * This class represents a rating given by a user to another user for a specific booking.
+ */
 public class Rating {
     private int id;
     private int bookingId;

@@ -1,5 +1,9 @@
 package app.model;
 
+/**
+ * SubCategory class representing the subcategories table in the database.
+ * This class represents a subcategory of assets that belongs to a specific category.
+ */
 public class SubCategory {
     private int id;
     private String name;
