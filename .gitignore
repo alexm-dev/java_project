@@ -1,21 +1,35 @@
-/.idea
+# --- Build output ---
 target/
 out/
 *.class
 *.jar
 *.war
 *.ear
-.settings/
+dependency-reduced-pom.xml
+
+# --- Submission artifact (locally generated) ---
+/submission
+
+# --- SQLite runtime DB (data is local per-machine, schema lives in src/main/resources) ---
 /database
-.project
-.classpath
-.idea/
-*.iml
-.vscode/
-.DS_Store
 *.db
 *.db-journal
 *.sqlite
 *.sqlite3
+
+# --- IDE: IntelliJ ---
+.idea/
+*.iml
+
+# --- IDE: Eclipse ---
+.classpath
+.project
+.settings/
+
+# --- IDE: VS Code ---
+.vscode/
+
+# --- OS / editor noise ---
+.DS_Store
 *.tmp
 *.swp
