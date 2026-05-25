@@ -19,5 +19,5 @@ public class SubCategory {
     // Getters
     public int getId() { return id; }
     public String getName() { return name; }
-    public int getCategoryID() { return categoryId; }
+    public int getCategoryId() { return categoryId; }
 }
