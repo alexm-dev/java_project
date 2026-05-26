@@ -8,9 +8,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 /**
- * CLI testbed for ShareSpace before the JavaFX UI is built.
+ * Temporary CLI testbed for ShareSpace before the JavaFX UI is built.
  *
  * Mirrors the planned UI for basic functionallity of sharespace.
  * Will be removed once JavaFX UI is ready.
@@ -71,16 +72,20 @@ public class TerminalApp {
 
     private void loggedInMenu() {
         User me = session.getActiveUser();
+        int userId = me.getId();
+        boolean isLender = userService.hasRole(userId, "lender");
+        boolean isRenter = userService.hasRole(userId, "renter");
+
         System.out.println();
         System.out.println("[" + me.getUsername() + "]");
         System.out.println("1. View profile");
         System.out.println("2. Change username");
         System.out.println("3. Change email");
         System.out.println("4. Change password");
-        System.out.println("5. Manage roles (not yet)");
+        System.out.println("5. Manage roles");
         System.out.println("6. Delete account");
-        System.out.println("7. My listings");
-        System.out.println("8. My bookings (not yet)");
+        if (isLender) System.out.println("7. My listings");
+        if (isRenter) System.out.println("8. My bookings (not yet)");
         System.out.println("9. Toggle debug logs (" + (Logger.isDebug() ? "ON" : "OFF") + ")");
         System.out.println("a. Admin / Debug");
         System.out.println("b. Browse assets");
@@ -92,10 +97,16 @@ public class TerminalApp {
             case "2" -> changeUsername();
             case "3" -> changeEmail();
             case "4" -> changePassword();
-            case "5" -> System.out.println("not yet integrated, use admin panel");
+            case "5" -> manageRoles();
             case "6" -> deleteAccount();
-            case "7" -> myListingsMenu();
-            case "8" -> System.out.println("BookingService not implemented yet.");
+            case "7" -> {
+                if (isLender) myListingsMenu();
+                else System.out.println("unknown option");
+            }
+            case "8" -> {
+                if (isRenter) System.out.println("BookingService not implemented yet.");
+                else System.out.println("unknown option");
+            }
             case "9" -> toggleDebug();
             case "a" -> adminMenu.run();
             case "b" -> browseAssets();
@@ -128,6 +139,36 @@ public class TerminalApp {
         }
         System.out.println("registered: " + user.getUsername() + " (id=" + user.getId() + ")");
         Logger.info("user registered: id=" + user.getId());
+        promptInitialRoles(user.getId());
+        session.loginAfterRegister(user);
+        System.out.println("logged in as " + user.getUsername());
+    }
+
+    private void promptInitialRoles(int userId) {
+        System.out.println();
+        System.out.println("How will you use ShareSpace?");
+        System.out.println("1. Lend items only");
+        System.out.println("2. Rent items only");
+        System.out.println("3. Both (recommended)");
+
+        String choice = prompt();
+        boolean wantLender = choice.equals("1") || choice.equals("3");
+        boolean wantRenter = choice.equals("2") || choice.equals("3");
+
+        if (!wantLender && !wantRenter) {
+            System.out.println("no role assigned - you can add one later via 'Manage roles'");
+            return;
+        }
+
+        for (Role r : userService.getAllRoles()) {
+            if (wantLender && r.getName().equalsIgnoreCase("lender")) {
+                userService.assignRoleToUser(userId, r.getId());
+            }
+            if (wantRenter && r.getName().equalsIgnoreCase("renter")) {
+                userService.assignRoleToUser(userId, r.getId());
+            }
+        }
+        System.out.println("role(s) assigned");
     }
 
     private void login() {
@@ -349,7 +390,56 @@ public class TerminalApp {
         }
     }
 
+    private void manageRoles() {
+        int userId = session.getActiveUser().getId();
+        List<Role> roles = userService.getRolesForUser(userId);
+        List<Role> allRoles = userService.getAllRoles();
+
+        System.out.println();
+        System.out.println("[manage roles]");
+        System.out.print("current: ");
+        System.out.println(roles.isEmpty() ? "none"
+            : roles.stream().map(Role::getName).collect(Collectors.joining(", ")));
+
+        System.out.println("available:");
+        for (Role r : allRoles) {
+            boolean has = roles.stream().anyMatch(ur -> ur.getId() == r.getId());
+            System.out.println("  " + r.getId() + ". " + r.getName() + (has ? " [assigned]" : ""));
+        }
+
+        System.out.println("a. Add role");
+        System.out.println("r. Remove role");
+        System.out.println("0. Back");
+
+        switch (prompt().toLowerCase()) {
+            case "a" -> {
+                Integer roleId = promptInt("Role id to add: ");
+                if (roleId == null) return;
+                if (userService.assignRoleToUser(userId, roleId)) {
+                    System.out.println("role assigned");
+                } else {
+                    System.out.println("failed - already assigned or role not found");
+                }
+            }
+            case "r" -> {
+                Integer roleId = promptInt("Role id to remove: ");
+                if (roleId == null) return;
+                if (userService.removeRoleFromUser(userId, roleId)) {
+                    System.out.println("role removed");
+                } else {
+                    System.out.println("failed - role not assigned");
+                }
+            }
+            case "0" -> {}
+            default -> System.out.println("unknown option");
+        }
+    }
+
     private void createListing() {
+        if (!userService.hasRole(session.getActiveUser().getId(), "lender")) {
+            System.out.println("you need the lender role to create listings (manage roles -> add lender)");
+            return;
+        }
         System.out.println("(use Admin / Debug to look up sub-category ids)");
         Integer subCategoryId = promptInt("Sub-category id: ");
 
@@ -436,7 +526,7 @@ public class TerminalApp {
         SubCategory sub = catalogService.getSubCategoryById(existing.getSubCategoryId());
         if (sub != null) {
             Map<String, String> current = MetadataUtil.parse(existing.getMetadata());
-            existing.setMetadata(promptMetadata(sub.getName(), current));
+            existing.setMetadata(promptMetadataUpdate(sub.getName(), current));
         }
 
         if (assetService.updateAsset(existing, me)) {
@@ -464,6 +554,39 @@ public class TerminalApp {
             if (!value.isEmpty()) map.put(key, value);
         }
         return MetadataUtil.serialize(map);
+    }
+
+    private String promptMetadataUpdate(String subCategoryName, Map<String, String> current) {
+        List<String> keys = MetadataSchema.keysFor(subCategoryName);
+        if (keys.isEmpty()) {
+            System.out.println("(no metadata schema for " + subCategoryName + ", skipping)");
+            return MetadataUtil.serialize(current);
+        }
+
+        Map<String, String> updated = new LinkedHashMap<>(current);
+
+        System.out.println("current metadata (" + subCategoryName + "):");
+        for (String key : keys) {
+            System.out.println("  " + key + ": " + updated.getOrDefault(key, "(not set)"));
+        }
+        System.out.println("field to update (blank = done):");
+
+        while (true) {
+            System.out.print("  field: ");
+            String field = scanner.nextLine().trim();
+            if (field.isEmpty()) break;
+            if (!keys.contains(field)) {
+                System.out.println("  unknown field. valid: " + String.join(", ", keys));
+                continue;
+            }
+            System.out.print("  " + field + " [" + updated.getOrDefault(field, "") + "]: ");
+            String value = scanner.nextLine().trim();
+            if (!value.isEmpty()) {
+                updated.put(field, value);
+                System.out.println("  updated");
+            }
+        }
+        return MetadataUtil.serialize(updated);
     }
 
     private void deleteListing() {
