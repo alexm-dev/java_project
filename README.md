@@ -11,9 +11,14 @@
 - IDE: use whatever but remember to set the used JDK in the settings
 > Always import project as a `Existing Maven project`
 
-> **IDE run configuration note:**  
-> If you run the app directly from your IDE (green play button)
-> and see a warning about `java.lang.System::load`, add this VM argument:  
+> **Recommended: run via Maven in your IDE**  
+> This picks up `.mvn/jvm.config` automatically and requires no per-run setup.
+>
+> **IntelliJ IDEA:** Run → Edit Configurations → + → Maven → set Working directory to the project root → set Command line to `exec:java` → OK. Use this config to run the app.  
+> **Eclipse:** Right-click project → Run As → Maven build... → set Goals to `exec:java` → Apply → Run. Save it as a named launch config and use it going forward.
+
+> **If you use the green play button instead:**  
+> You may see a warning about `java.lang.System::load`. Add this VM argument once to silence it:  
 > `--enable-native-access=ALL-UNNAMED`
 >
 > **IntelliJ:** First run `Main.java` once via right-click → **Run 'Main.main()'** to generate the config, then Run → Edit Configurations → select the `Main` entry → expand **Modify options** → tick **Add VM options** → paste the argument → Apply  
