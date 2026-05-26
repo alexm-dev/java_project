@@ -1,6 +1,6 @@
 /**
  * Utility classes for the application.
- * This package contains the {@link app.util.PasswordHasher} class for hashing passwords.
+ * This package contains the {@link AuthUtil} class for authorization utility.
  */
 
 package app.util;
