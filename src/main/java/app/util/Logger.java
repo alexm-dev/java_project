@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * logger for the service layer.
  */
+// TODO: Refactor to use proper logging framework for future UI integration.
 public class Logger {
 
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -42,7 +43,7 @@ public class Logger {
      * Logs a warning message.
      */
     public static void warn(String message) {
-        System.out.println(stamp() + " [WARN ] " + message);
+        System.out.println(stamp() + " [WARN] " + message);
     }
 
     /**
