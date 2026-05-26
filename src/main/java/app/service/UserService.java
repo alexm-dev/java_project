@@ -4,7 +4,9 @@ import app.dao.UserDAO;
 import app.dao.UserRoleDAO;
 import app.model.User;
 import app.model.UserRole;
+import app.util.EmailValidator;
 import app.util.PasswordHasher;
+import app.util.PasswordValidator;
 
 /**
  * Handles user registration, profile management, password updates and role assignment.
@@ -30,8 +32,21 @@ public class UserService {
      * @return the created User with its generated id, or null if registration failed
      */
     public User register(String username, String email, char[] plainPassword) {
-        if (userDAO.findByEmail(email) != null) return null;
-        if (userDAO.findByUsername(username) != null) return null;
+        if (!EmailValidator.isValid(email)){
+            return null;
+        }
+
+        if (!PasswordValidator.isValid(plainPassword)) {
+            return null;
+        }
+
+        if (userDAO.findByEmail(email) != null) {
+            return null;
+        }
+
+        if (userDAO.findByUsername(username) != null) {
+            return null;
+        }
 
         User user = new User(username, email, PasswordHasher.hash(plainPassword));
         user.setStatus("active");
@@ -67,11 +82,20 @@ public class UserService {
      * @return true if updated, false if the user was not found or the email is taken
      */
     public boolean updateEmail(int userId, String newEmail) {
+        if (!EmailValidator.isValid(newEmail)) { 
+            return false;
+        }
+
         User existing = userDAO.findByEmail(newEmail);
-        if (existing != null && existing.getId() != userId) return false;
+        if (existing != null && existing.getId() != userId) { 
+            return false;
+        }
 
         User user = userDAO.findById(userId);
-        if (user == null) return false;
+        if (user == null) {
+            return false;
+        }
+
         user.setEmail(newEmail);
         return userDAO.update(user);
     }
@@ -86,10 +110,15 @@ public class UserService {
      */
     public boolean updateUsername(int userId, String newUsername) {
         User existing = userDAO.findByUsername(newUsername);
-        if (existing != null && existing.getId() != userId) return false;
+        if (existing != null && existing.getId() != userId) { 
+            return false;
+        }
 
         User user = userDAO.findById(userId);
-        if (user == null) return false;
+        if (user == null) {
+            return false;
+        }
+
         user.setUsername(newUsername);
         return userDAO.update(user);
     }
@@ -103,7 +132,10 @@ public class UserService {
      */
     public boolean updateStatus(int userId, String newStatus) {
         User user = userDAO.findById(userId);
-        if (user == null) return false;
+        if (user == null) {
+            return false;
+        }
+
         user.setStatus(newStatus);
         return userDAO.update(user);
     }
@@ -116,8 +148,14 @@ public class UserService {
      * @return true if updated, false if the user was not found
      */
     public boolean updatePassword(int userId, char[] plainPassword) {
+        if (!PasswordValidator.isValid(plainPassword)) { 
+            return false;
+        }
         User user = userDAO.findById(userId);
-        if (user == null) return false;
+        if (user == null) {
+            return false;
+        }
+
         user.setPasswordHash(PasswordHasher.hash(plainPassword));
         return userDAO.update(user);
     }
