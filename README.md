@@ -14,15 +14,15 @@
 > **Recommended: run via Maven in your IDE**  
 > This picks up `.mvn/jvm.config` automatically and requires no per-run setup.
 >
-> **IntelliJ IDEA:** Run → Edit Configurations → + → Maven → set Working directory to the project root → set Command line to `exec:java` → OK. Use this config to run the app.  
-> **Eclipse:** Right-click project → Run As → Maven build... → set Goals to `exec:java` → Apply → Run. Save it as a named launch config and use it going forward.
+> **IntelliJ IDEA:** Run -> Edit Configurations -> + -> Maven -> set Working directory to the project root -> set Command line to `exec:java` -> OK. Use this config to run the app.  
+> **Eclipse:** Right-click project -> Run As -> Maven build... -> set Goals to `exec:java` -> Apply -> Run. Save it as a named launch config and use it going forward.
 
 > **If you use the green play button instead:**  
 > You may see a warning about `java.lang.System::load`. Add this VM argument once to silence it:  
 > `--enable-native-access=ALL-UNNAMED`
 >
-> **IntelliJ:** First run `Main.java` once via right-click → **Run 'Main.main()'** to generate the config, then Run → Edit Configurations → select the `Main` entry → expand **Modify options** → tick **Add VM options** → paste the argument → Apply  
-> **Eclipse:** Run → Run Configurations → select your configuration → **Arguments** tab → paste into **VM arguments** → Apply  
+> **IntelliJ:** First run `Main.java` once via right-click -> **Run 'Main.main()'** to generate the config, then Run -> Edit Configurations -> select the `Main` entry -> expand **Modify options** -> tick **Add VM options** -> paste the argument -> Apply  
+> **Eclipse:** Run -> Run Configurations -> select your configuration -> **Arguments** tab -> paste into **VM arguments** -> Apply  
 
 If you prefer the terminal:
 
@@ -35,37 +35,66 @@ mvn compile
 
 # Run with maven
 mvn exec:java
+
+# Test with maven
+mvn test
+
+# Package with maven
+mvn clean package -Dskiptest -q
+
+# Run the JAR
+java -jar /target/ShareSpace-X.Y.Z.jar
 ```
 
 ## Tech Stack
 
-| Layer    | Technology                                     |
-|----------|------------------------------------------------|
-| Language | Java 25                                        |
-| Build    | Maven (shade, surefire, javadoc, exec plugins) |
-| Database | SQLite via JDBC                                |
-| Security | BCrypt (jbcrypt) password hashing              |
-| UI       | JavaFX (planned)                               |
-| Testing  | JUnit 5                                        |
-| CI/CD    | GitHub Actions                                 |
+| Layer      | Technology                                     |
+|------------|------------------------------------------------|
+| Language   | Java 25                                        |
+| Build      | Maven (shade, surefire, javadoc, exec plugins) |
+| Database   | SQLite via JDBC                                |
+| Encryption | BCrypt (jbcrypt) password hashing              |
+| JSON       | Jackson (asset metadata serialization)         |
+| UI         | JavaFX (planned)                               |
+| Testing    | JUnit 5                                        |
+| CI/CD      | GitHub Actions                                 |
 
-**Architecture:** Models → DAOs → Services (planned) → JavaFX UI (planned)  
-No frameworks; pure Java OOP.
+**Architecture:** DB Models -> DAOs -> Services -> JavaFX UI (planned)  
 
 ## JavaDoc
 
 Generate and view the project code documentaion JavaDoc HTML:
 
 - CLI / Maven:
-  - Linux/macOS: ./scripts/build-docs.sh
-  - Windows PowerShell: .\scripts\build-docs.ps1
-  - Output: target/reports/apidocs/index.html
+```sh
+# Build documentaion
+mvn javadoc:javdoc
+```
 
-- IntelliJ: View → Tool Windows → Maven → Plugins → javadoc → double-click `javadoc:javadoc`
-- Eclipse: right-click project → Run As → Maven build... → set Goals to `javadoc:javadoc` → Run
-- **Do not use** the IDE built-in Generate Javadoc wizard — it ignores pom.xml and will fail on Java 25
-- Submission: the build scripts include the generated docs in the submission archive (target/reports/apidocs). You can also zip the apidocs folder for manual uploads.
-
-These scripts ensure everyone produces identical output used in reviews.
+- IntelliJ: View -> Tool Windows -> Maven -> Plugins -> javadoc -> double-click `javadoc:javadoc`
+- Eclipse: right-click project -> Run As -> Maven build... -> set Goals to `javadoc:javadoc` -> Run
 
 You can then open the index.html inside output directory. Default: `target/reports/apidocs/index.html`
+
+## Submission
+
+To build the submission zip/tar:
+
+Either run the `/scripts/build-submission.sh` or `build-submission.ps1`
+OR
+Download the action workflow artifact from the the [Java CI Maven](https://github.com/alexm-dev/ShareSpace/actions/workflows/maven.yml) workflow.
+Click on the most recent commit and then download the `ShareSpace-submission`.
+
+Prefer the script.
+
+## TODOs
+
+- [x] DB Models
+- [x] DAOs
+- [] Services
+    - Missing: `BookingService` and `RatingService`
+
+- [x] Admin Panel
+    - Note: Needs rework
+
+- [] UI
