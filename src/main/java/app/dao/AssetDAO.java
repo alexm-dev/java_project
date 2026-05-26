@@ -20,7 +20,7 @@ public class AssetDAO extends BaseDAO<Asset, Integer> {
     /** The columns to select for findById and findAll, in mapRow order. */
     private static final String[] COLUMNS = {
         "id", "owner_id", "sub_category_id", "model",
-        "description", "condition", "asset_location_id", "daily_rate"
+        "description", "condition", "asset_location_id", "daily_rate", "metadata"
     };
 
     /** The name of the database table this DAO manages. */
@@ -43,7 +43,7 @@ public class AssetDAO extends BaseDAO<Asset, Integer> {
      */
     @Override
     protected Asset mapRow(ResultSet rs) throws SQLException {
-        return new Asset(
+        Asset asset = new Asset(
             rs.getInt("id"),
             rs.getInt("owner_id"),
             rs.getInt("sub_category_id"),
@@ -53,6 +53,8 @@ public class AssetDAO extends BaseDAO<Asset, Integer> {
             rs.getInt("asset_location_id"),
             rs.getDouble("daily_rate")
         );
+        asset.setMetadata(rs.getString("metadata"));
+        return asset;
     }
 
     /**
@@ -64,8 +66,8 @@ public class AssetDAO extends BaseDAO<Asset, Integer> {
     @Override
     public boolean create(Asset asset) {
         String sql = "INSERT INTO assets "
-                   + "(owner_id, sub_category_id, model, description, condition, asset_location_id, daily_rate) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                   + "(owner_id, sub_category_id, model, description, condition, asset_location_id, daily_rate, metadata) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, asset.getOwnerId());
             stmt.setInt(2, asset.getSubCategoryId());
@@ -74,6 +76,7 @@ public class AssetDAO extends BaseDAO<Asset, Integer> {
             stmt.setString(5, asset.getCondition());
             stmt.setInt(6, asset.getAssetLocationId());
             stmt.setDouble(7, asset.getDailyRate());
+            stmt.setString(8, asset.getMetadata());
             boolean success = stmt.executeUpdate() > 0;
             if (success) {
                 try (ResultSet keys = stmt.getGeneratedKeys()) {
@@ -97,7 +100,7 @@ public class AssetDAO extends BaseDAO<Asset, Integer> {
     public boolean update(Asset asset) {
         String sql = "UPDATE assets SET "
                    + "sub_category_id = ?, model = ?, description = ?, "
-                   + "condition = ?, asset_location_id = ?, daily_rate = ? "
+                   + "condition = ?, asset_location_id = ?, daily_rate = ?, metadata = ? "
                    + "WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, asset.getSubCategoryId());
@@ -106,7 +109,8 @@ public class AssetDAO extends BaseDAO<Asset, Integer> {
             stmt.setString(4, asset.getCondition());
             stmt.setInt(5, asset.getAssetLocationId());
             stmt.setDouble(6, asset.getDailyRate());
-            stmt.setInt(7, asset.getId());
+            stmt.setString(7, asset.getMetadata());
+            stmt.setInt(8, asset.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update asset", e);

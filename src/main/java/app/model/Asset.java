@@ -17,6 +17,7 @@ public class Asset {
     private String condition;
     private int assetLocationId;
     private double dailyRate;
+    private String metadata;
 
     /**
      * Constructor for creating an Asset with a ID (used when retrieving from the database).
@@ -54,6 +55,7 @@ public class Asset {
     public String getCondition() { return condition; }
     public int getAssetLocationId() { return assetLocationId; }
     public double getDailyRate() { return dailyRate; }
+    public String getMetadata() { return metadata; }
 
     // Setters
     public void setId(int id) { this.id = id; }
@@ -62,4 +64,5 @@ public class Asset {
     public void setCondition(String condition) { this.condition = condition; }
     public void setAssetLocationId(int assetLocationId) { this.assetLocationId = assetLocationId; }
     public void setDailyRate(double dailyRate) { this.dailyRate = dailyRate; }
+    public void setMetadata(String metadata) { this.metadata = metadata; }
 }

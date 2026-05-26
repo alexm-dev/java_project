@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS assets (
     condition         TEXT,
     asset_location_id INTEGER NOT NULL,
     daily_rate        REAL    NOT NULL,
+    metadata          TEXT,
 
     FOREIGN KEY (owner_id)          REFERENCES users(id)          ON DELETE CASCADE,
     FOREIGN KEY (sub_category_id)   REFERENCES sub_categories(id) ON DELETE RESTRICT,
