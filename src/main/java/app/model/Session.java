@@ -1,17 +1,16 @@
 package app.model;
 
+import java.time.LocalDateTime;
+
 /**
  * Session represents a user session on sharespace.
- * This class stores the session ID, the user ID associated with the session,
- * and the timestamp of when the session was created.
- * Is used to manage authentication of users on sharespace.
  */
 public class Session {
     private int id;
     private int userId;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
-    public Session(int id, int userId, String createdAt) {
+    public Session(int id, int userId, LocalDateTime createdAt) {
         this.id = id;
         this.userId = userId;
         this.createdAt = createdAt;
@@ -20,5 +19,5 @@ public class Session {
     // Getters
     public int getId() { return id; }
     public int getUserId() { return userId; }
-    public String getCreatedAt() { return createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
 }

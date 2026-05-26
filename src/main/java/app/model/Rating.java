@@ -1,8 +1,9 @@
 package app.model;
 
+import java.time.LocalDateTime;
+
 /**
  * Rating class representing the ratings table in the database.
- * This class represents a rating given by a user to another user for a specific booking.
  */
 public class Rating {
     private int id;
@@ -11,9 +12,13 @@ public class Rating {
     private Integer ratedUserId;
     private int ratingValue;
     private String comment;
-    private String createdTime;
+    private LocalDateTime createdTime;
 
-    public Rating(int id, int bookingId, int reviewerId, Integer ratedUserId, int ratingValue, String comment, String createdTime) {
+    /**
+     * Constructor to load from the DB.
+     */
+    public Rating(int id, int bookingId, int reviewerId, Integer ratedUserId,
+                  int ratingValue, String comment, LocalDateTime createdTime) {
         this.id = id;
         this.bookingId = bookingId;
         this.reviewerId = reviewerId;
@@ -23,6 +28,9 @@ public class Rating {
         this.createdTime = createdTime;
     }
 
+    /**
+     * Constructor to create a new Rating (id and createdTime are set by the DB).
+     */
     public Rating(int bookingId, int reviewerId, Integer ratedUserId, int ratingValue, String comment) {
         this.bookingId = bookingId;
         this.reviewerId = reviewerId;
@@ -41,5 +49,5 @@ public class Rating {
     public Integer getRatedUserId() { return ratedUserId; }
     public int getRatingValue() { return ratingValue; }
     public String getComment() { return comment; }
-    public String getCreatedTime() { return createdTime; }
+    public LocalDateTime getCreatedTime() { return createdTime; }
 }

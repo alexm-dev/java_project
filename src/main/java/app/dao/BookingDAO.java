@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,42 +22,33 @@ import java.util.List;
  */
 public class BookingDAO extends BaseDAO<Booking, Integer> {
 
-    /** The columns to select for findById and findAll, in mapRow order. */
+    private static final DateTimeFormatter DT_FMT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private static final String[] COLUMNS = {
         "id", "asset_id", "renter_id", "start_time", "end_time",
         "status", "total_cost", "created_time", "updated_time"
     };
 
-    /** The name of the database table this DAO manages. */
     @Override
-    protected String tableName() {
-        return "bookings";
-    }
+    protected String tableName() { return "bookings"; }
 
-    /** The columns to select for findById and findAll, in mapRow order. */
     @Override
-    protected String[] selectColumns() {
-        return COLUMNS;
-    }
+    protected String[] selectColumns() { return COLUMNS; }
 
-    /**
-     * Maps a ResultSet row to a Booking object.
-     *
-     * @param rs The ResultSet to map.
-     * @return A Booking object representing the current row.
-     */
     @Override
     protected Booking mapRow(ResultSet rs) throws SQLException {
+        String updatedStr = rs.getString("updated_time");
         return new Booking(
             rs.getInt("id"),
             rs.getInt("asset_id"),
             rs.getInt("renter_id"),
-            rs.getString("start_time"),
-            rs.getString("end_time"),
+            LocalDate.parse(rs.getString("start_time")),
+            LocalDate.parse(rs.getString("end_time")),
             rs.getString("status"),
             rs.getDouble("total_cost"),
-            rs.getString("created_time"),
-            rs.getString("updated_time")
+            LocalDateTime.parse(rs.getString("created_time"), DT_FMT),
+            updatedStr != null ? LocalDateTime.parse(updatedStr, DT_FMT) : null
         );
     }
 
@@ -72,8 +66,8 @@ public class BookingDAO extends BaseDAO<Booking, Integer> {
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, booking.getAssetId());
             stmt.setInt(2, booking.getRenterId());
-            stmt.setString(3, booking.getStartTime());
-            stmt.setString(4, booking.getEndTime());
+            stmt.setString(3, booking.getStartTime().toString());
+            stmt.setString(4, booking.getEndTime().toString());
             stmt.setString(5, booking.getStatus());
             stmt.setDouble(6, booking.getTotalCost());
             boolean success = stmt.executeUpdate() > 0;
@@ -97,12 +91,11 @@ public class BookingDAO extends BaseDAO<Booking, Integer> {
      */
     @Override
     public boolean update(Booking booking) {
-        String sql = "UPDATE bookings SET status = ?, total_cost = ?, updated_time = ? WHERE id = ?";
+        String sql = "UPDATE bookings SET status = ?, total_cost = ?, updated_time = CURRENT_TIMESTAMP WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, booking.getStatus());
             stmt.setDouble(2, booking.getTotalCost());
-            stmt.setString(3, booking.getUpdatedTime());
-            stmt.setInt(4, booking.getId());
+            stmt.setInt(3, booking.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update booking", e);
@@ -150,13 +143,6 @@ public class BookingDAO extends BaseDAO<Booking, Integer> {
         return list;
     }
 
-    /**
-     * Helper method to find bookings by an integer column.
-     *
-     * @param wherePredicate the SQL predicate to filter by (eg. "asset_id = ?")
-     * @param value the integer value to match
-     * @param errorMessage the error message for exceptions
-     */
     private List<Booking> findByColumn(String wherePredicate, int value, String errorMessage) {
         List<Booking> list = new ArrayList<>();
         String cols = String.join(", ", COLUMNS);

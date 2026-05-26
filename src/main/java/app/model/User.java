@@ -1,5 +1,7 @@
 package app.model;
 
+import java.time.LocalDateTime;
+
 /**
  * User model representing the User table in the database.
  */
@@ -8,13 +10,13 @@ public class User {
     private String username;
     private String email;
     private String passwordHash;
-    private String createdTime;
+    private LocalDateTime createdTime;
     private String status;
 
     /**
      * Constructor to load from the DB.
      */
-    public User(int id, String username, String email, String passwordHash, String createdTime, String status) {
+    public User(int id, String username, String email, String passwordHash, LocalDateTime createdTime, String status) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -24,7 +26,7 @@ public class User {
     }
 
     /**
-     * Constructor to create a new User in the DB (generates id, createdTime)
+     * Constructor to create a new User (id and createdTime are set by the DB).
      */
     public User(String username, String email, String passwordHash) {
         this.username = username;
@@ -37,7 +39,7 @@ public class User {
     public String getUsername() { return username; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
-    public String getCreatedTime() { return createdTime; }
+    public LocalDateTime getCreatedTime() { return createdTime; }
     public String getStatus() { return status; }
 
     // Setters

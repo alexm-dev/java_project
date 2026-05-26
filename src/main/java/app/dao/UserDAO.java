@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Data Access Object for the User entity.
@@ -13,34 +15,18 @@ import java.sql.Statement;
  */
 public class UserDAO extends BaseDAO<User, Integer> {
 
-    /**
-     * The columns to select for findById and findAll, in mapRow order.
-     */
+    private static final DateTimeFormatter FMT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private static final String[] COLUMNS =
         { "id", "username", "email", "password_hash", "created_time", "status" };
 
-    /**
-     * The name of the database table this DAO manages.
-     */
     @Override
-    protected String tableName() {
-        return "users";
-    }
+    protected String tableName() { return "users"; }
 
-    /**
-     * The columns to select for findById and findAll
-     */
     @Override
-    protected String[] selectColumns() {
-        return COLUMNS;
-    }
+    protected String[] selectColumns() { return COLUMNS; }
 
-    /**
-     * Maps a ResultSet row to a User object.
-     *
-     * @param rs The ResultSet to map.
-     * @return A User object representing the current row of the ResultSet.
-     */
     @Override
     protected User mapRow(ResultSet rs) throws SQLException {
         return new User(
@@ -48,13 +34,13 @@ public class UserDAO extends BaseDAO<User, Integer> {
             rs.getString("username"),
             rs.getString("email"),
             rs.getString("password_hash"),
-            rs.getString("created_time"),
+            LocalDateTime.parse(rs.getString("created_time"), FMT),
             rs.getString("status")
         );
     }
 
     /**
-     * Crates a new user in the database.
+     * Creates a new user in the database.
      *
      * @param user The user to create. The generated id will be set back on this object.
      * @return true if the user was created successfully, false otherwise.

@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,31 +24,20 @@ import java.util.List;
  */
 public class RatingDAO extends BaseDAO<Rating, Integer> {
 
-    /** The columns to select for findById and findAll, in mapRow order. */
+    private static final DateTimeFormatter FMT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     private static final String[] COLUMNS = {
         "id", "booking_id", "reviewer_id", "rated_user_id",
         "rating", "comment", "created_time"
     };
 
-    /** The name of the database table this DAO manages. */
     @Override
-    protected String tableName() {
-        return "ratings";
-    }
+    protected String tableName() { return "ratings"; }
 
-    /** The columns to select for findById and findAll, in mapRow order. */
     @Override
-    protected String[] selectColumns() {
-        return COLUMNS;
-    }
+    protected String[] selectColumns() { return COLUMNS; }
 
-    /**
-     * Maps a ResultSet row to a Rating object.
-     * rated_user_id is read via getObject so a SQL NULL becomes Java null.
-     *
-     * @param rs The ResultSet to map.
-     * @return A Rating object representing the current row.
-     */
     @Override
     protected Rating mapRow(ResultSet rs) throws SQLException {
         return new Rating(
@@ -56,7 +47,7 @@ public class RatingDAO extends BaseDAO<Rating, Integer> {
             (Integer) rs.getObject("rated_user_id"),
             rs.getInt("rating"),
             rs.getString("comment"),
-            rs.getString("created_time")
+            LocalDateTime.parse(rs.getString("created_time"), FMT)
         );
     }
 
@@ -123,14 +114,6 @@ public class RatingDAO extends BaseDAO<Rating, Integer> {
         return findByIntColumn("rated_user_id", ratedUserId, "Failed to find ratings by rated user id");
     }
 
-    /**
-     * Helper method to find ratings by an integer column.
-     *
-     * @param column the column name to filter by
-     * @param value the integer value to match
-     * @param errorMessage the error message for exceptions
-     * @return list of ratings matching the criteria, empty if none found
-     */
     private List<Rating> findByIntColumn(String column, int value, String errorMessage) {
         List<Rating> list = new ArrayList<>();
         String cols = String.join(", ", COLUMNS);
