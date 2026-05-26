@@ -57,6 +57,17 @@ public class SessionService {
     }
 
     /**
+     * Logs in a user after registration by saving the ID to the session.
+     *
+     * @param user The user to log in after registration.
+     */
+    public void loginAfterRegister(User user) {
+        sessionDAO.save(user.getId());
+        activeUser = user;
+    }
+
+
+    /**
      * Logout the current user
      */
     public void logout() {
