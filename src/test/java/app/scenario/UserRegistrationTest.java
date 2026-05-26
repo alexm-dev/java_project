@@ -7,6 +7,8 @@ import app.database.Database;
 import app.model.Role;
 import app.model.User;
 import app.model.UserRole;
+import app.service.UserService;
+import app.util.PasswordHasher;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,30 +27,30 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserRegistrationTest {
 
     private static final String ANNA_EMAIL = "anna.lender.scenario@sharespace.test";
+    private static final String ANNA_USERNAME = "Anna Lender";
+    private static final String PASSWORD = "s3cretPassw0rd!";
 
-    private UserDAO     userDAO;
-    private RoleDAO     roleDAO;
+    private UserService userService;
+    private UserDAO userDAO;
+    private RoleDAO roleDAO;
     private UserRoleDAO urDAO;
-    private Role        lenderRole;
+    private Role lenderRole;
 
     @BeforeAll
     void init() {
         Database.initialize();
-        userDAO    = new UserDAO();
-        roleDAO    = new RoleDAO();
-        urDAO      = new UserRoleDAO();
+        userService = new UserService();
+        userDAO = new UserDAO();
+        roleDAO = new RoleDAO();
+        urDAO = new UserRoleDAO();
         lenderRole = roleDAO.findByName("lender");
     }
 
     @BeforeEach
-    void setUp() {
-        cleanup();
-    }
+    void setUp() { cleanup(); }
 
     @AfterEach
-    void tearDown() {
-        cleanup();
-    }
+    void tearDown() { cleanup(); }
 
     private void cleanup() {
         User existing = userDAO.findByEmail(ANNA_EMAIL);
@@ -61,32 +63,45 @@ class UserRegistrationTest {
 
     @Test
     void newUser_canRegister() {
-        User anna = new User("Anna Lender", ANNA_EMAIL, "secureHash");
-        anna.setStatus("active");
+        User anna = userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
 
-        assertTrue(userDAO.create(anna));
+        assertNotNull(anna);
         assertTrue(anna.getId() > 0);
+        assertEquals("active", anna.getStatus());
+    }
+
+    @Test
+    void registering_withDuplicateEmail_returnsNull() {
+        userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
+
+        User second = userService.register("Someone Else", ANNA_EMAIL, "otherPwd".toCharArray());
+        assertNull(second);
+    }
+
+    @Test
+    void storedPassword_isHashed_notPlaintext() {
+        userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
+
+        User stored = userDAO.findByEmail(ANNA_EMAIL);
+        assertNotEquals(PASSWORD, stored.getPasswordHash(), "password must not be stored as plain text");
+        assertTrue(PasswordHasher.verify(PASSWORD.toCharArray(), stored.getPasswordHash()));
     }
 
     @Test
     void registeredUser_canBeFoundByEmail() {
-        User anna = new User("Anna Lender", ANNA_EMAIL, "secureHash");
-        anna.setStatus("active");
-        userDAO.create(anna);
+        userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
 
-        User found = userDAO.findByEmail(ANNA_EMAIL);
+        User found = userService.findByEmail(ANNA_EMAIL);
         assertNotNull(found);
-        assertEquals("Anna Lender", found.getUsername());
+        assertEquals(ANNA_USERNAME, found.getUsername());
         assertEquals("active", found.getStatus());
     }
 
     @Test
     void registeredUser_canBeAssignedLenderRole() {
-        User anna = new User("Anna Lender", ANNA_EMAIL, "secureHash");
-        anna.setStatus("active");
-        userDAO.create(anna);
+        User anna = userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
 
-        assertTrue(urDAO.create(new UserRole(anna.getId(), lenderRole.getId())));
+        assertTrue(userService.assignRoleToUser(anna.getId(), lenderRole.getId()));
 
         List<UserRole> roles = urDAO.findByUserId(anna.getId());
         assertEquals(1, roles.size());
@@ -95,9 +110,7 @@ class UserRegistrationTest {
 
     @Test
     void registeredUser_appearsInUserList() {
-        User anna = new User("Anna Lender", ANNA_EMAIL, "secureHash");
-        anna.setStatus("active");
-        userDAO.create(anna);
+        userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
 
         boolean found = userDAO.findAll().stream()
             .anyMatch(u -> u.getEmail().equals(ANNA_EMAIL));
@@ -105,13 +118,37 @@ class UserRegistrationTest {
     }
 
     @Test
-    void user_canUpdateProfile() {
-        User anna = new User("Anna Lender", ANNA_EMAIL, "secureHash");
-        anna.setStatus("active");
-        userDAO.create(anna);
+    void user_canUpdateStatus() {
+        User anna = userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
 
-        anna.setStatus("inactive");
-        assertTrue(userDAO.update(anna));
-        assertEquals("inactive", userDAO.findById(anna.getId()).getStatus());
+        assertTrue(userService.updateStatus(anna.getId(), "inactive"));
+        assertEquals("inactive", userService.findById(anna.getId()).getStatus());
+    }
+
+    @Test
+    void user_canUpdateEmail() {
+        User anna = userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
+
+        String newEmail = "anna.new@sharespace.test";
+        try {
+            assertTrue(userService.updateEmail(anna.getId(), newEmail));
+            assertEquals(newEmail, userService.findById(anna.getId()).getEmail());
+        } finally {
+            // cleanup the renamed user since the standard cleanup() looks for ANNA_EMAIL
+            User renamed = userDAO.findByEmail(newEmail);
+            if (renamed != null) userDAO.delete(renamed.getId());
+        }
+    }
+
+    @Test
+    void user_canUpdatePassword() {
+        User anna = userService.register(ANNA_USERNAME, ANNA_EMAIL, PASSWORD.toCharArray());
+
+        String newPassword = "evenM0reSecure!";
+        assertTrue(userService.updatePassword(anna.getId(), newPassword.toCharArray()));
+
+        User updated = userDAO.findByEmail(ANNA_EMAIL);
+        assertTrue(PasswordHasher.verify(newPassword.toCharArray(), updated.getPasswordHash()));
+        assertFalse(PasswordHasher.verify(PASSWORD.toCharArray(), updated.getPasswordHash()));
     }
 }
