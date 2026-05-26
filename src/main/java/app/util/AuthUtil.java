@@ -4,6 +4,9 @@ import java.util.regex.Pattern;
 import java.util.Arrays;
 import org.mindrot.jbcrypt.BCrypt;
 
+/**
+ * Autorizaton utlity for validation of email and passwords.
+ */
 public class AuthUtil {
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
