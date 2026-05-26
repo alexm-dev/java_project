@@ -92,11 +92,11 @@ public class BookingDAO extends BaseDAO<Booking, Integer> {
     }
 
     /**
-     * Updates the mutable fields of an existing booking (status, total_cost, updated_time).
-     * The time window, asset, and renter are immutable after creation.
+     * Updates status and total_cost. The time window, asset and renter
+     * are immutable after creation. updated_time is set automatically by the DB.
      *
-     * @param booking The booking to update. Must have its id set.
-     * @return true if the booking was updated, false if not found.
+     * @param booking Must have its id set.
+     * @return true if a row was updated, false if not found.
      */
     @Override
     public boolean update(Booking booking) {

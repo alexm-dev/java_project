@@ -107,11 +107,8 @@ public class LocationDAO extends BaseDAO<Location, Integer> {
     }
 
     /**
-     * Finds a Location record that matches the given Location's city, postal code, street address, and country.
-     * This is used to check for duplicates before creating a new Location.
-     *
-     * @param location The Location object containing the values to match.
-     * @return A matching Location object if found, or null if no match is found.
+     * Looks for an existing location row matching city, postal_code, street_address and country.
+     * District is ignored since it is optional. Returns null if nothing matches.
      */
     public Location findMatch(Location location) {
         String sql = "SELECT id, city, postal_code, district, street_address, country " +

@@ -96,10 +96,7 @@ public class UserDAO extends BaseDAO<User, Integer> {
     }
 
     /**
-     * Finds a user by their email address.
-     *
-     * @param email The email address to search for.
-     * @return The user with the given email, or null if not found.
+     * Finds a user by email.
      */
     public User findByEmail(String email) {
         String sql = "SELECT id, username, email, password_hash, created_time, status FROM users WHERE email = ?";

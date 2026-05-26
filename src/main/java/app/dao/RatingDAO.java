@@ -94,9 +94,7 @@ public class RatingDAO extends BaseDAO<Rating, Integer> {
         }
     }
 
-    /**
-     * Not supported. Ratings are immutable once submitted.
-     */
+    /** Ratings are immutable once submitted -- update is not allowed. */
     @Override
     public boolean update(Rating rating) {
         throw new UnsupportedOperationException(

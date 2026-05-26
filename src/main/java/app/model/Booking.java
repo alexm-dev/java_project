@@ -21,7 +21,7 @@ public class Booking {
     private LocalDateTime updatedTime;
 
     /**
-     * Constructor to load from the DB.
+     * Full constructor, used when loading from DB.
      */
     public Booking(int id, int assetId, int renterId, LocalDate startTime, LocalDate endTime,
                    String status, double totalCost, LocalDateTime createdTime, LocalDateTime updatedTime) {
