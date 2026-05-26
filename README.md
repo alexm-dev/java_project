@@ -44,6 +44,7 @@ mvn exec:java
 | Language | Java 25                                        |
 | Build    | Maven (shade, surefire, javadoc, exec plugins) |
 | Database | SQLite via JDBC                                |
+| Security | BCrypt (jbcrypt) password hashing              |
 | UI       | JavaFX (planned)                               |
 | Testing  | JUnit 5                                        |
 | CI/CD    | GitHub Actions                                 |
