@@ -5,7 +5,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 /**
  * Handles password hashing and verification using BCrypt.
- * The work factor is 12 - slow enough to resist brute-force.
+ * The work factor is set to 12.
  *
  * Methods accept char[] instead of String so the plaintext can be zeroed
  * out from memory immediately after hashing, reducing the window where
@@ -35,7 +35,7 @@ public class PasswordHasher {
      * Verifies a plain-text password against a stored bcrypt hash,
      * then zeroes out the char[].
      *
-     * @param plain      the plain-text password to check (zeroed on return)
+     * @param plain the plain-text password to check (zeroed on return)
      * @param storedHash the hash retrieved from the database
      * @return true if the password matches, false otherwise
      */
