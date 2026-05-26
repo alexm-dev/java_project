@@ -35,7 +35,7 @@ JavaFX
 
 ## JavaDoc
 
-Generate and view the project JavaDoc HTML (used in reviews):
+Generate and view the project JavaDoc HTML:
 
 - CLI / Maven:
   - Linux/macOS: ./scripts/build-docs.sh
