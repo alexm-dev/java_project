@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 
 /**
  * Represents a booking made by a renter for an asset.
+ *
+ * Each booking has an associated asset, renter, start and end date, status, total cost,
+ * and timestamps for when the booking was created and last updated.
  */
 public class Booking {
     private int id;

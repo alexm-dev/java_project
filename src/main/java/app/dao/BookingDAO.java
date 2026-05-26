@@ -25,17 +25,26 @@ public class BookingDAO extends BaseDAO<Booking, Integer> {
     private static final DateTimeFormatter DT_FMT =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /** The columns to select for findById and findAll, in mapRow order. */
     private static final String[] COLUMNS = {
         "id", "asset_id", "renter_id", "start_time", "end_time",
         "status", "total_cost", "created_time", "updated_time"
     };
 
+    /** The name of the database table this DAO manages. */
     @Override
     protected String tableName() { return "bookings"; }
 
+    /** The columns to select for findById and findAll, in mapRow order. */
     @Override
     protected String[] selectColumns() { return COLUMNS; }
 
+    /**
+     * Maps a ResultSet row to a Booking object.
+     *
+     * @param rs The ResultSet to map.
+     * @return A Booking object representing the current row.
+     */
     @Override
     protected Booking mapRow(ResultSet rs) throws SQLException {
         String updatedStr = rs.getString("updated_time");

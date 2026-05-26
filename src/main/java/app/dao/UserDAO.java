@@ -18,15 +18,24 @@ public class UserDAO extends BaseDAO<User, Integer> {
     private static final DateTimeFormatter FMT =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /** The columns to select for findById and findAll, in mapRow order. */
     private static final String[] COLUMNS =
         { "id", "username", "email", "password_hash", "created_time", "status" };
 
+    /** The name of the database table this DAO manages. */
     @Override
     protected String tableName() { return "users"; }
 
+    /** The columns to select for findById and findAll, in mapRow order. */
     @Override
     protected String[] selectColumns() { return COLUMNS; }
 
+    /**
+     * Maps a ResultSet row to a User object.
+     *
+     * @param rs The ResultSet to map.
+     * @return A User object representing the current row of the ResultSet.
+     */
     @Override
     protected User mapRow(ResultSet rs) throws SQLException {
         return new User(

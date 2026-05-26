@@ -27,17 +27,27 @@ public class RatingDAO extends BaseDAO<Rating, Integer> {
     private static final DateTimeFormatter FMT =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /** The columns to select for findById and findAll, in mapRow order. */
     private static final String[] COLUMNS = {
         "id", "booking_id", "reviewer_id", "rated_user_id",
         "rating", "comment", "created_time"
     };
 
+    /** The name of the database table this DAO manages. */
     @Override
     protected String tableName() { return "ratings"; }
 
+    /** The columns to select for findById and findAll, in mapRow order. */
     @Override
     protected String[] selectColumns() { return COLUMNS; }
 
+    /**
+     * Maps a ResultSet row to a Rating object.
+     * rated_user_id is read via getObject so a SQL NULL becomes Java null.
+     *
+     * @param rs The ResultSet to map.
+     * @return A Rating object representing the current row.
+     */
     @Override
     protected Rating mapRow(ResultSet rs) throws SQLException {
         return new Rating(
