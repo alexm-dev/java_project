@@ -13,10 +13,11 @@
 
 > **IDE run configuration note:**  
 > If you run the app directly from your IDE (green play button)
-> and see a warning about `java.lang.System::load`, add this to your run configuration's VM arguments:  
+> and see a warning about `java.lang.System::load`, add this VM argument:  
 > `--enable-native-access=ALL-UNNAMED`
-> IntelliJ: Run > Edit Configurations > VM options.  
-> Eclipse: Run Configurations > Arguments > VM arguments  
+>
+> **IntelliJ:** First run `Main.java` once via right-click → **Run 'Main.main()'** to generate the config, then Run → Edit Configurations → select the `Main` entry → expand **Modify options** → tick **Add VM options** → paste the argument → Apply  
+> **Eclipse:** Run → Run Configurations → select your configuration → **Arguments** tab → paste into **VM arguments** → Apply  
 
 If you prefer the terminal:
 
