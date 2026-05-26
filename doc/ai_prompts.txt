@@ -5,7 +5,9 @@ Tools used:
 - Github Copilot (https://github.com/copilot)
     - Copilot autocomplete also helped with code completion
 
-## Java generics and abstraction
+------------------------------------------------------------------------------------------------
+Java generics and abstraction
+------------------------------------------------------------------------------------------------
 
 Prompt:
 "
@@ -160,7 +162,9 @@ List<Asset> all = dao.findAll(); // calls AssetDAO.tableName() + AssetDAO.mapRow
 This is the classic **Template Method Pattern** — `BaseDAO` defines the algorithm skeleton (`findAll`), and subclasses fill in the specific steps (`tableName`, `mapRow`). Very common in Java frameworks like Spring Data and Hibernate.
 "
 
-## Jbcrypt hashing
+------------------------------------------------------------------------------------------------
+Jbcrypt hashing
+------------------------------------------------------------------------------------------------
 
 Prompt:
 "Hello, how to use Jbcrypt for encrypting hashes of a plain password ?"
@@ -242,7 +246,9 @@ Each hash is unique even for the same password, due to the random salt.
 Always use checkpw() for verification, not string equality.
 "
 
-## Metadata JSON deserializing
+------------------------------------------------------------------------------------------------
+Metadata JSON deserializing
+------------------------------------------------------------------------------------------------
 
 Prompt:
 "How to add metadata info to Assets withoutn needing to add multiple fields ? Use json ? Also how is the library used for serialization / deserializing then ?"
@@ -358,7 +364,9 @@ Key points
 ConcernApproachDB schemaSingle TEXT/VARCHAR column — no migrations when metadata changesType safetyTyped POJOs per category, deserialized on demandUnknown fields@JsonIgnoreProperties(ignoreUnknown = true) handles schema evolutionObjectMapperDeclare it static final — it's thread-safe and expensive to constructDAO layerReads/writes getMetadata()/setMetadata() as plain strings — no changes needed
 "
 
-## SQL Java
+------------------------------------------------------------------------------------------------
+SQL Java
+------------------------------------------------------------------------------------------------
 
 Prompt:
 "
