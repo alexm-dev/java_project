@@ -2,9 +2,14 @@ package app.service;
 
 import app.dao.UserDAO;
 import app.dao.UserRoleDAO;
+import app.dao.RoleDAO;
 import app.model.User;
 import app.model.UserRole;
+import app.model.Role;
 import app.util.AuthUtil;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Handles user registration, profile management, password updates and role assignment.
@@ -14,10 +19,12 @@ public class UserService {
 
     private final UserDAO userDAO;
     private final UserRoleDAO userRoleDAO;
+    private final RoleDAO roleDAO;
 
     public UserService() {
         this.userDAO = new UserDAO();
         this.userRoleDAO = new UserRoleDAO();
+        this.roleDAO = new RoleDAO();
     }
 
     /**
@@ -188,5 +195,44 @@ public class UserService {
      */
     public boolean removeRoleFromUser(int userId, int roleId) {
         return userRoleDAO.delete(userId, roleId);
+    }
+
+    /**
+     * Check if a user has a specific role.
+     *
+     * @param userId the user id
+     * @param roleName the name of the role to check (eg. "lender")
+     * @return true if the user has the role, false otherwise
+     */
+    public boolean hasRole(int userId, String roleName) {
+        Role role = roleDAO.findByName(roleName);
+        if (role == null) {
+            return false;
+        }
+        return userRoleDAO.findByUserId(userId)
+            .stream()
+            .anyMatch(ur -> ur.getRoleId() == role.getId());
+    }
+
+    /**
+     * Returns a list of all available roles in the system.
+     *
+     * @return a list of Roles, or an empty list if none exist
+     */
+    public List<Role> getAllRoles() {
+        return roleDAO.findAll();
+    }
+
+    /**
+     * Returns a list of Role objects assigned to the user.
+     *
+     * @param userId the user id
+     * @return a list of Roles, or an empty list
+     */
+    public List<Role> getRolesForUser(int userId) {
+        return userRoleDAO.findByUserId(userId).stream()
+            .map(ur -> roleDAO.findById(ur.getRoleId()))
+            .filter(r -> r != null)
+            .collect(Collectors.toList());
     }
 }
