@@ -59,13 +59,52 @@ public class UserService {
     }
 
     /**
-     * Updates a user's profile fields (username, email, status).
-     * The user object must have its id set.
+     * Changes a users email address. Rejects the change if the new email
+     * is already taken by another user.
      *
-     * @param user the user with updated values
+     * @param userId the user id
+     * @param newEmail the new email address
+     * @return true if updated, false if the user was not found or the email is taken
+     */
+    public boolean updateEmail(int userId, String newEmail) {
+        User existing = userDAO.findByEmail(newEmail);
+        if (existing != null && existing.getId() != userId) return false;
+
+        User user = userDAO.findById(userId);
+        if (user == null) return false;
+        user.setEmail(newEmail);
+        return userDAO.update(user);
+    }
+
+    /**
+     * Changes a users username. Rejects the change if the new username
+     * is already taken by another user.
+     *
+     * @param userId the user id
+     * @param newUsername the new username
+     * @return true if updated, false if the user was not found or the username is taken
+     */
+    public boolean updateUsername(int userId, String newUsername) {
+        User existing = userDAO.findByUsername(newUsername);
+        if (existing != null && existing.getId() != userId) return false;
+
+        User user = userDAO.findById(userId);
+        if (user == null) return false;
+        user.setUsername(newUsername);
+        return userDAO.update(user);
+    }
+
+    /**
+     * Updates a user's status (eg. active, inactive, suspended).
+     *
+     * @param userId the user id
+     * @param newStatus the new status string
      * @return true if updated, false if the user was not found
      */
-    public boolean updateProfile(User user) {
+    public boolean updateStatus(int userId, String newStatus) {
+        User user = userDAO.findById(userId);
+        if (user == null) return false;
+        user.setStatus(newStatus);
         return userDAO.update(user);
     }
 
