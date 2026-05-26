@@ -16,7 +16,6 @@ public class Logger {
     /**
      * Enables ot disables debug logging.
      * @param enabled true to enable debug logging, false to disable
-     * @return true if debug logging is enabled, false otherwise
      */
     public static void setDebug(boolean enabled) { debugEnabled = enabled; }
 

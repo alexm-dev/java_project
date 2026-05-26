@@ -4,8 +4,8 @@
 
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent $PSScriptRoot
-$stage       = Join-Path $projectRoot "submission\ShareSpace"
-$outZip      = Join-Path $projectRoot "submission\ShareSpace-submission.zip"
+$stage = Join-Path $projectRoot "submission\ShareSpace"
+$outZip = Join-Path $projectRoot "submission\ShareSpace-submission.zip"
 
 Write-Host "==> Cleaning previous builds"
 & mvn -f "$projectRoot\pom.xml" clean -q
@@ -20,10 +20,10 @@ Write-Host "==> Staging submission folder"
 if (Test-Path "$projectRoot\submission") { Remove-Item "$projectRoot\submission" -Recurse -Force }
 New-Item -ItemType Directory -Path $stage | Out-Null
 
-Copy-Item -Path "$projectRoot\src"      -Destination $stage -Recurse
-Copy-Item -Path "$projectRoot\pom.xml"  -Destination $stage
+Copy-Item -Path "$projectRoot\src\main" -Destination $stage -Recurse
+Copy-Item -Path "$projectRoot\pom.xml" -Destination $stage
 Copy-Item -Path "$projectRoot\README.md" -Destination $stage -ErrorAction SilentlyContinue
-Copy-Item -Path "$projectRoot\LICENSE"   -Destination $stage -ErrorAction SilentlyContinue
+Copy-Item -Path "$projectRoot\LICENSE" -Destination $stage -ErrorAction SilentlyContinue
 
 Copy-Item -Path "$projectRoot\target\reports\apidocs" -Destination "$stage\javadoc" -Recurse
 

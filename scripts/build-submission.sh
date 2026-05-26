@@ -22,10 +22,10 @@ echo "==> Staging submission folder"
 rm -rf "$project_root/submission"
 mkdir -p "$stage"
 
-cp -r "$project_root/src"      "$stage/"
-cp    "$project_root/pom.xml"  "$stage/"
-cp    "$project_root/README.md" "$stage/" 2>/dev/null || true
-cp    "$project_root/LICENSE"   "$stage/" 2>/dev/null || true
+cp -r "$project_root/src/main" "$stage/"
+cp "$project_root/pom.xml" "$stage/"
+cp "$project_root/README.md" "$stage/" 2>/dev/null || true
+cp "$project_root/LICENSE" "$stage/" 2>/dev/null || true
 
 cp -r "$project_root/target/reports/apidocs" "$stage/javadoc"
 
