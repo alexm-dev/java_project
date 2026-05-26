@@ -1,0 +1,495 @@
+# AI Prompts used to help develop and understand implementation better.
+
+Tools used:
+- Claude (https://claude.ai)
+- Github Copilot (https://github.com/copilot)
+    - Copilot autocomplete also helped with code completion
+
+## Java generics and abstraction
+
+Prompt:
+"
+For Java, how do generic abstract classes work with template methods ?
+Example: BaseDAO<T, ID> means that it translates the Type to an object of the subclasses ?
+Also Polymorphism for the subclasses work the same way as in C++ ?
+Meaning:
+BaseDAO
+protected abstract string tableName()
+
+AssetDAO extends BaseDao<Asset, Integer>
+@Override
+protected String tableName() {return "Assets"} ?
+Would then the BaseDAO automatically choose the correct tableName function (like virtual in C++?)
+"
+
+Answer: 
+"
+Yes, exactly right! Java generics + abstract classes work very similarly to C++ templates + virtual functions, with some key differences. Let me break it all down:
+
+## Generic Abstract Classes
+
+```java
+public abstract class BaseDAO<T, ID> {
+    // T = the entity type (Asset, User, etc.)
+    // ID = the primary key type (Integer, Long, String, etc.)
+    
+    protected abstract String tableName();
+    
+    // T is used as a real type here
+    public abstract T findById(ID id);
+    public abstract List<T> findAll();
+    public abstract void save(T entity);
+}
+```
+
+`T` and `ID` are **type parameters** — when a subclass declares `extends BaseDAO<Asset, Integer>`, Java substitutes `Asset` for `T` and `Integer` for `ID` throughout. So `findById(ID id)` becomes effectively `findById(Integer id)` in `AssetDAO`.
+
+---
+
+## Polymorphism — Yes, Like C++ Virtual
+
+Your understanding is exactly right. In Java, **all instance methods are virtual by default** — you don't need the `virtual` keyword like in C++. So:
+
+```java
+public abstract class BaseDAO<T, ID> {
+    
+    protected abstract String tableName(); // implicitly "virtual"
+    
+    public List<T> findAll() {
+        // BaseDAO automatically calls the subclass's tableName() at runtime
+        String sql = "SELECT * FROM " + tableName();
+        // ...
+    }
+}
+```
+
+```java
+public class AssetDAO extends BaseDAO<Asset, Integer> {
+    
+    @Override
+    protected String tableName() {
+        return "assets"; // this is what gets called, even from BaseDAO.findAll()
+    }
+    
+    @Override
+    public Asset findById(Integer id) { ... }
+    
+    @Override
+    public List<Asset> findAll() { ... } // or just inherit from BaseDAO
+}
+```
+
+When `BaseDAO.findAll()` calls `tableName()`, Java uses **dynamic dispatch** and resolves it to `AssetDAO.tableName()` at runtime — identical to C++ virtual behavior.
+
+---
+
+## C++ vs Java Comparison
+
+| Feature | C++ | Java |
+|---|---|---|
+| Virtual methods | `virtual` keyword required | All methods virtual by default |
+| Prevent overriding | (no direct equivalent) | `final` keyword |
+| Pure virtual / abstract | `= 0` | `abstract` keyword |
+| Generics/Templates | Compiled per type (code bloat possible) | **Type erasure** at runtime (one compiled class) |
+| Override annotation | Not required | `@Override` (optional but recommended) |
+
+---
+
+## The Key Difference: Type Erasure
+
+This is where Java diverges from C++. At **runtime**, Java erases `T` and `ID` — they become `Object` internally. This means:
+
+```java
+// You CANNOT do this in Java (unlike C++):
+public T createInstance() {
+    return new T(); // ❌ compile error — T is erased at runtime
+}
+
+// Workaround: pass the Class object
+public abstract class BaseDAO<T, ID> {
+    private final Class<T> type;
+    
+    protected BaseDAO(Class<T> type) {
+        this.type = type;
+    }
+    
+    public T createInstance() throws Exception {
+        return type.getDeclaredConstructor().newInstance(); // ✅
+    }
+}
+
+public class AssetDAO extends BaseDAO<Asset, Integer> {
+    public AssetDAO() {
+        super(Asset.class); // pass the class explicitly
+    }
+}
+```
+
+---
+
+## Full Realistic Example
+
+```java
+// Base
+public abstract class BaseDAO<T, ID> {
+    protected abstract String tableName();
+    protected abstract T mapRow(ResultSet rs);  // subclass maps DB row → object
+    
+    public List<T> findAll() {
+        String sql = "SELECT * FROM " + tableName(); // calls subclass impl
+        // execute query, call mapRow() for each row...
+    }
+}
+
+// Subclass
+public class AssetDAO extends BaseDAO<Asset, Integer> {
+    @Override
+    protected String tableName() { return "assets"; }
+    
+    @Override
+    protected Asset mapRow(ResultSet rs) {
+        return new Asset(rs.getInt("id"), rs.getString("name"));
+    }
+}
+
+// Usage
+BaseDAO<Asset, Integer> dao = new AssetDAO();
+List<Asset> all = dao.findAll(); // calls AssetDAO.tableName() + AssetDAO.mapRow()
+```
+
+This is the classic **Template Method Pattern** — `BaseDAO` defines the algorithm skeleton (`findAll`), and subclasses fill in the specific steps (`tableName`, `mapRow`). Very common in Java frameworks like Spring Data and Hibernate.
+"
+
+## Jbcrypt hashing
+
+Prompt:
+"Hello, how to use Jbcrypt for encrypting hashes of a plain password ?"
+
+Answer:
+"
+Here's how to use jBCrypt for password hashing in Java:
+
+1. Add the Dependency
+Maven:
+xml<dependency>
+    <groupId>org.mindrot</groupId>
+    <artifactId>jbcrypt</artifactId>
+    <version>0.4</version>
+</dependency>
+Gradle:
+groovyimplementation 'org.mindrot:jbcrypt:0.4'
+
+2. Hash a Password
+javaimport org.mindrot.jbcrypt.BCrypt;
+
+// Hash a plain-text password
+String plainPassword = "mySecretPassword";
+String hashedPassword = BCrypt.hashpw(plainPassword, BCrypt.gensalt());
+
+System.out.println(hashedPassword);
+// e.g. $2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36zLa2oqME9pv7s5yxknHyy
+BCrypt.gensalt() generates a random salt with a default work factor of 10.
+
+3. Verify a Password
+javaString inputPassword = "mySecretPassword";
+
+if (BCrypt.checkpw(inputPassword, hashedPassword)) {
+    System.out.println("Password matches!");
+} else {
+    System.out.println("Invalid password.");
+}
+
+Never compare the raw hash strings directly — always use checkpw().
+
+4. Adjust the Work Factor (Cost)
+The work factor controls how computationally expensive the hash is (higher = slower = more secure):
+java// Work factor ranges from 4 to 31 (default is 10)
+String hash = BCrypt.hashpw(plainPassword, BCrypt.gensalt(12)); // stronger
+Work FactorApprox. Time10 (default)~100ms12~400ms14~1.5s
+
+5. Full Example
+javaimport org.mindrot.jbcrypt.BCrypt;
+
+public class PasswordUtil {
+
+    public static String hashPassword(String plainPassword) {
+        return BCrypt.hashpw(plainPassword, BCrypt.gensalt(12));
+    }
+
+    public static boolean verifyPassword(String plainPassword, String hashedPassword) {
+        return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
+
+    public static void main(String[] args) {
+        String plain = "mySecretPassword";
+
+        String hashed = hashPassword(plain);
+        System.out.println("Hashed: " + hashed);
+
+        boolean isValid = verifyPassword(plain, hashed);
+        System.out.println("Valid: " + isValid); // true
+
+        boolean isInvalid = verifyPassword("wrongPassword", hashed);
+        System.out.println("Valid: " + isInvalid); // false
+    }
+}
+
+Key Points to Remember
+
+Never store plain-text passwords — always store the hash.
+No need to store the salt separately — it's embedded in the hash string itself.
+Each hash is unique even for the same password, due to the random salt.
+Always use checkpw() for verification, not string equality.
+"
+
+## Metadata JSON deserializing
+
+Prompt:
+"How to add metadata info to Assets withoutn needing to add multiple fields ? Use json ? Also how is the library used for serialization / deserializing then ?"
+
+Answer:
+"
+Good pattern — storing metadata as a JSON string in a single column is clean and flexible. Here's how to wire it up properly using Jackson (the standard Java JSON library).
+1. Add Jackson to your project
+Maven:
+xml<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.17.0</version>
+</dependency>
+
+2. Create a typed metadata class
+Instead of passing raw JSON strings around, define a POJO per subcategory type (or a generic one):
+javapackage app.model.metadata;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true) // safe if metadata evolves over time
+public class BikeMetadata {
+    private String brand;
+    private int wheelSize;
+    private String frameSize;
+    private boolean electricAssist;
+
+    // No-arg constructor required by Jackson
+    public BikeMetadata() {}
+
+    public BikeMetadata(String brand, int wheelSize, String frameSize, boolean electricAssist) {
+        this.brand = brand;
+        this.wheelSize = wheelSize;
+        this.frameSize = frameSize;
+        this.electricAssist = electricAssist;
+    }
+
+    // Getters & setters
+    public String getBrand() { return brand; }
+    public void setBrand(String brand) { this.brand = brand; }
+    public int getWheelSize() { return wheelSize; }
+    public void setWheelSize(int wheelSize) { this.wheelSize = wheelSize; }
+    public String getFrameSize() { return frameSize; }
+    public void setFrameSize(String frameSize) { this.frameSize = frameSize; }
+    public boolean isElectricAssist() { return electricAssist; }
+    public void setElectricAssist(boolean electricAssist) { this.electricAssist = electricAssist; }
+}
+
+3. Add a serialization helper to Asset
+Keep metadata as a plain String in the DB, but expose typed helpers:
+javaimport com.fasterxml.jackson.databind.ObjectMapper;
+
+public class Asset {
+    // ... existing fields ...
+    private String metadata;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    // Serialize: object → JSON string → store
+    public <T> void setMetadataObject(T obj) {
+        try {
+            this.metadata = MAPPER.writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize metadata", e);
+        }
+    }
+
+    // Deserialize: JSON string → typed object
+    public <T> T getMetadataObject(Class<T> type) {
+        if (metadata == null || metadata.isBlank()) return null;
+        try {
+            return MAPPER.readValue(metadata, type);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to deserialize metadata", e);
+        }
+    }
+
+    // Raw getter/setter still used by your DAO for DB read/write
+    public String getMetadata() { return metadata; }
+    public void setMetadata(String metadata) { this.metadata = metadata; }
+}
+
+4. Usage in AssetService (or a controller)
+java// --- Serializing (before save) ---
+BikeMetadata meta = new BikeMetadata("Trek", 29, "L", false);
+
+Asset asset = new Asset(ownerId, subCategoryId, model, description, condition, locationId, dailyRate);
+asset.setMetadataObject(meta);  // stores JSON string internally
+
+assetService.createAsset(asset, location);
+
+// --- Deserializing (after fetch) ---
+Asset fetched = assetService.findById(assetId);
+BikeMetadata bike = fetched.getMetadataObject(BikeMetadata.class);
+
+System.out.println(bike.getBrand());      // "Trek"
+System.out.println(bike.getWheelSize()); // 29
+The JSON stored in the DB column will look like:
+json{"brand":"Trek","wheelSize":29,"frameSize":"L","electricAssist":false}
+
+5. Handling multiple subcategory types
+If different subcategories need different metadata shapes, you can dispatch by subCategoryId:
+javapublic Object getTypedMetadata(Asset asset) {
+    return switch (asset.getSubCategoryId()) {
+        case 1 -> asset.getMetadataObject(BikeMetadata.class);
+        case 2 -> asset.getMetadataObject(CameraMetadata.class);
+        default -> asset.getMetadataObject(Map.class); // fallback to generic map
+    };
+}
+
+Key points
+ConcernApproachDB schemaSingle TEXT/VARCHAR column — no migrations when metadata changesType safetyTyped POJOs per category, deserialized on demandUnknown fields@JsonIgnoreProperties(ignoreUnknown = true) handles schema evolutionObjectMapperDeclare it static final — it's thread-safe and expensive to constructDAO layerReads/writes getMetadata()/setMetadata() as plain strings — no changes needed
+"
+
+## SQL Java
+
+Prompt:
+"
+With Java JDBC and SQL how to make statements and add the queries into methods as well ?
+Exmaple:
+public boolean create(Table table) {
+   String sql = "INSERT INTO table ..."
+}
+
+What is PreparedStatement from java.sql ?
+and what does RETURN_GENERATED_KEYS do for the actual sql ?
+"
+
+Answer:
+"
+**PreparedStatement** is a precompiled SQL statement. Unlike a regular `Statement`, it uses `?` placeholders instead of concatenating values directly into the string — which prevents SQL injection and is more efficient when running the same query multiple times.
+
+**`RETURN_GENERATED_KEYS`** tells JDBC to give you back the auto-generated primary key (e.g. `AUTO_INCREMENT` id) after an INSERT. Without it, you'd have no way to know what ID the database assigned to the new row.
+
+---
+
+Here's the full pattern for all 4 CRUD operations:
+
+```java
+// CREATE
+public boolean create(User user) {
+    String sql = "INSERT INTO users (name, email) VALUES (?, ?)";
+
+    try (Connection conn = Database.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+        stmt.setString(1, user.getName());
+        stmt.setString(2, user.getEmail());
+        stmt.executeUpdate();
+
+        // Get the generated ID back
+        ResultSet keys = stmt.getGeneratedKeys();
+        if (keys.next()) {
+            user.setId(keys.getInt(1));
+        }
+        return true;
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+// READ (single)
+public User findById(int id) {
+    String sql = "SELECT * FROM users WHERE id = ?";
+
+    try (Connection conn = Database.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, id);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            return new User(rs.getInt("id"), rs.getString("name"), rs.getString("email"));
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
+// READ (all)
+public List<User> findAll() {
+    String sql = "SELECT * FROM users";
+    List<User> users = new ArrayList<>();
+
+    try (Connection conn = Database.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            users.add(new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")));
+        }
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return users;
+}
+
+// UPDATE
+public boolean update(User user) {
+    String sql = "UPDATE users SET name = ?, email = ? WHERE id = ?";
+
+    try (Connection conn = Database.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, user.getName());
+        stmt.setString(2, user.getEmail());
+        stmt.setInt(3, user.getId());
+
+        return stmt.executeUpdate() > 0; // returns rows affected
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+
+// DELETE
+public boolean delete(int id) {
+    String sql = "DELETE FROM users WHERE id = ?";
+
+    try (Connection conn = Database.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setInt(1, id);
+        return stmt.executeUpdate() > 0;
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+        return false;
+    }
+}
+```
+
+---
+
+Key things to note:
+
+- `executeUpdate()` is for INSERT/UPDATE/DELETE — returns rows affected
+- `executeQuery()` is for SELECT — returns a `ResultSet`
+- The `try-with-resources` block automatically closes the connection and statement, no need for `finally`
+- `stmt.setXxx(index, value)` — index starts at **1**, not 0
+"
+
+
