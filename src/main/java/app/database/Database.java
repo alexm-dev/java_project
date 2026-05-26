@@ -12,6 +12,9 @@ import java.sql.SQLException;
  */
 public class Database {
 
+    // TOOD: either v1 or v2 for DB location, v1 is simpler but v2 is more deployment friendly.
+    // If decided, uncomment v1 and comment out v2 and vice versa.
+
     // v1 relative path (dev/submission, run from project root)
     private static final String URL = "jdbc:sqlite:database/sharespace.db";
 
@@ -22,13 +25,20 @@ public class Database {
     private static Connection connection;
 
     /**
-     * Initialize method to set up databse schema from schema.sql.
-     * Is called from Main.java at application startup.
+     * Initialize method to set up the database from schema.sql and seed.sql.
      */
     public static void initialize() {
         Connection conn = getConnection();
-        try (InputStream is = Database.class.getResourceAsStream("/schema.sql")) {
-            if (is == null) throw new RuntimeException("schema.sql not found in classpath");
+        executeScript(conn, "/schema.sql");
+        executeScript(conn, "/seed.sql");
+    }
+
+    private static void executeScript(Connection conn, String resourcePath) {
+        try (InputStream is = Database.class.getResourceAsStream(resourcePath)) {
+            if (is == null) { 
+                throw new RuntimeException(resourcePath + " not found in classpath");
+            }
+
             String sql = new String(is.readAllBytes());
             for (String statement : sql.split(";")) {
                 String trimmed = statement.trim();
@@ -37,7 +47,7 @@ public class Database {
                 }
             }
         } catch (IOException | SQLException e) {
-            throw new RuntimeException("Database initialization failed", e);
+            throw new RuntimeException("Failed to execute " + resourcePath, e);
         }
     }
 
