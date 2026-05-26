@@ -2,6 +2,7 @@ package app.scenario;
 
 import app.dao.AssetDAO;
 import app.dao.BookingDAO;
+import app.dao.CategoryDAO;
 import app.dao.LocationDAO;
 import app.dao.RatingDAO;
 import app.dao.RoleDAO;
@@ -11,6 +12,7 @@ import app.dao.UserRoleDAO;
 import app.database.Database;
 import app.model.Asset;
 import app.model.Booking;
+import app.model.Category;
 import app.model.Location;
 import app.model.Rating;
 import app.model.SubCategory;
@@ -23,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,8 +36,10 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BookingFlowTest {
 
-    private static final String ANNA_EMAIL = "anna.booking.scenario@sharespace.test";
-    private static final String BOB_EMAIL  = "bob.booking.scenario@sharespace.test";
+    private static final String ANNA_EMAIL  = "anna.booking.scenario@sharespace.test";
+    private static final String BOB_EMAIL   = "bob.booking.scenario@sharespace.test";
+    private static final String TEST_CAT    = "Test Category (BookingFlow)";
+    private static final String TEST_SUBCAT = "Test SubCategory (BookingFlow)";
 
     private UserDAO     userDAO;
     private LocationDAO locDAO;
@@ -42,6 +47,7 @@ class BookingFlowTest {
     private BookingDAO  bookingDAO;
     private RatingDAO   ratingDAO;
     private UserRoleDAO urDAO;
+    private RoleDAO     roleDAO;
     private SubCategory subCat;
 
     @BeforeAll
@@ -53,13 +59,23 @@ class BookingFlowTest {
         bookingDAO = new BookingDAO();
         ratingDAO  = new RatingDAO();
         urDAO      = new UserRoleDAO();
+        roleDAO    = new RoleDAO();
 
-        RoleDAO roleDAO = new RoleDAO();
-        subCat = new SubCategoryDAO().findAll().get(0);
+        // ensure test category + sub-category exist (create only if missing)
+        CategoryDAO    catDAO    = new CategoryDAO();
+        SubCategoryDAO subCatDAO = new SubCategoryDAO();
 
-        // store roles so scenario methods can look them up by name if needed
-        roleDAO.findByName("lender");
-        roleDAO.findByName("renter");
+        if (catDAO.findByName(TEST_CAT) == null) {
+            catDAO.create(new Category(TEST_CAT, "Fixture category for BookingFlowTest"));
+        }
+        Category cat = catDAO.findByName(TEST_CAT);
+
+        List<SubCategory> subs = subCatDAO.findByCategoryId(cat.getId());
+        if (subs.isEmpty()) {
+            subCatDAO.create(new SubCategory(TEST_SUBCAT, cat.getId()));
+            subs = subCatDAO.findByCategoryId(cat.getId());
+        }
+        subCat = subs.get(0);
     }
 
     @BeforeEach
@@ -94,13 +110,13 @@ class BookingFlowTest {
         }
     }
 
-    // ----- helpers to set up scenario state -----
+    // ----- helpers -----
 
     private User createAnna() {
         User anna = new User("Anna Lender", ANNA_EMAIL, "hash");
         anna.setStatus("active");
         userDAO.create(anna);
-        urDAO.create(new UserRole(anna.getId(), new RoleDAO().findByName("lender").getId()));
+        urDAO.create(new UserRole(anna.getId(), roleDAO.findByName("lender").getId()));
         return anna;
     }
 
@@ -108,7 +124,7 @@ class BookingFlowTest {
         User bob = new User("Bob Renter", BOB_EMAIL, "hash");
         bob.setStatus("active");
         userDAO.create(bob);
-        urDAO.create(new UserRole(bob.getId(), new RoleDAO().findByName("renter").getId()));
+        urDAO.create(new UserRole(bob.getId(), roleDAO.findByName("renter").getId()));
         return bob;
     }
 
@@ -130,7 +146,7 @@ class BookingFlowTest {
         Asset cam = createAnnaAsset(anna);
 
         Booking booking = new Booking(cam.getId(), bob.getId(),
-            "2026-09-01", "2026-09-03", "pending", 100.0);
+            LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), "pending", 100.0);
 
         assertTrue(bookingDAO.create(booking));
         assertTrue(booking.getId() > 0);
@@ -143,7 +159,7 @@ class BookingFlowTest {
         Asset cam = createAnnaAsset(anna);
 
         Booking booking = new Booking(cam.getId(), bob.getId(),
-            "2026-09-01", "2026-09-03", "pending", 100.0);
+            LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), "pending", 100.0);
         bookingDAO.create(booking);
 
         assertEquals("pending", bookingDAO.findById(booking.getId()).getStatus());
@@ -156,11 +172,10 @@ class BookingFlowTest {
         Asset cam = createAnnaAsset(anna);
 
         Booking booking = new Booking(cam.getId(), bob.getId(),
-            "2026-09-01", "2026-09-03", "pending", 100.0);
+            LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), "pending", 100.0);
         bookingDAO.create(booking);
 
         booking.setStatus("confirmed");
-        booking.setUpdatedTime("2026-05-26 10:00:00");
         assertTrue(bookingDAO.update(booking));
         assertEquals("confirmed", bookingDAO.findById(booking.getId()).getStatus());
     }
@@ -172,7 +187,7 @@ class BookingFlowTest {
         Asset cam = createAnnaAsset(anna);
 
         Booking booking = new Booking(cam.getId(), bob.getId(),
-            "2026-09-01", "2026-09-03", "pending", 100.0);
+            LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), "pending", 100.0);
         bookingDAO.create(booking);
 
         List<Booking> bobs = bookingDAO.findByRenterId(bob.getId());
@@ -187,10 +202,9 @@ class BookingFlowTest {
         Asset cam = createAnnaAsset(anna);
 
         Booking booking = new Booking(cam.getId(), bob.getId(),
-            "2026-09-01", "2026-09-03", "completed", 100.0);
+            LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), "completed", 100.0);
         bookingDAO.create(booking);
         booking.setStatus("completed");
-        booking.setUpdatedTime("2026-09-04 09:00:00");
         bookingDAO.update(booking);
 
         Rating review = new Rating(booking.getId(), bob.getId(), anna.getId(), 5, "Excellent lender!");
@@ -202,16 +216,16 @@ class BookingFlowTest {
     }
 
     @Test
-    void afterBooking_lenderCanRateTheAssetExperience() {
+    void afterBooking_renterCanRateTheAssetExperience() {
         User anna = createAnna();
         User bob  = createBob();
         Asset cam = createAnnaAsset(anna);
 
         Booking booking = new Booking(cam.getId(), bob.getId(),
-            "2026-09-01", "2026-09-03", "completed", 100.0);
+            LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), "completed", 100.0);
         bookingDAO.create(booking);
 
-        // asset rating: ratedUserId is null, rating is about the asset/experience
+        // asset rating: ratedUserId is null (rating is about the asset, not a person)
         Rating assetReview = new Rating(booking.getId(), bob.getId(), null, 4, "Great camera, minor scratches");
         assertTrue(ratingDAO.create(assetReview));
         assertNull(ratingDAO.findById(assetReview.getId()).getRatedUserId());
@@ -224,7 +238,7 @@ class BookingFlowTest {
         Asset cam = createAnnaAsset(anna);
 
         Booking booking = new Booking(cam.getId(), bob.getId(),
-            "2026-09-01", "2026-09-03", "completed", 100.0);
+            LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 3), "completed", 100.0);
         bookingDAO.create(booking);
 
         Rating review = new Rating(booking.getId(), bob.getId(), anna.getId(), 5, "Great!");

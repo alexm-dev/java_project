@@ -30,26 +30,40 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AssetListingTest {
 
-    private static final String ANNA_EMAIL = "anna.listing.scenario@sharespace.test";
+    private static final String ANNA_EMAIL   = "anna.listing.scenario@sharespace.test";
+    private static final String TEST_CAT     = "Test Category (AssetListing)";
+    private static final String TEST_SUBCAT  = "Test SubCategory (AssetListing)";
 
     private UserDAO        userDAO;
     private LocationDAO    locDAO;
     private AssetDAO       assetDAO;
     private UserRoleDAO    urDAO;
+    private CategoryDAO    catDAO;
+    private SubCategoryDAO subCatDAO;
     private SubCategory    subCat;
-    private Category       category;
 
     @BeforeAll
     void init() {
         Database.initialize();
-        userDAO  = new UserDAO();
-        locDAO   = new LocationDAO();
-        assetDAO = new AssetDAO();
-        urDAO    = new UserRoleDAO();
+        userDAO    = new UserDAO();
+        locDAO     = new LocationDAO();
+        assetDAO   = new AssetDAO();
+        urDAO      = new UserRoleDAO();
+        catDAO     = new CategoryDAO();
+        subCatDAO  = new SubCategoryDAO();
 
-        CategoryDAO catDAO = new CategoryDAO();
-        category = catDAO.findAll().get(0);
-        subCat   = new SubCategoryDAO().findByCategoryId(category.getId()).get(0);
+        // ensure test category + sub-category exist (create only if missing)
+        if (catDAO.findByName(TEST_CAT) == null) {
+            catDAO.create(new Category(TEST_CAT, "Fixture category for AssetListingTest"));
+        }
+        Category cat = catDAO.findByName(TEST_CAT);
+
+        List<SubCategory> subs = subCatDAO.findByCategoryId(cat.getId());
+        if (subs.isEmpty()) {
+            subCatDAO.create(new SubCategory(TEST_SUBCAT, cat.getId()));
+            subs = subCatDAO.findByCategoryId(cat.getId());
+        }
+        subCat = subs.get(0);
     }
 
     @BeforeEach
