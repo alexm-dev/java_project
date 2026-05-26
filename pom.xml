@@ -6,7 +6,7 @@
 
   <groupId>app</groupId>
   <artifactId>ShareSpace</artifactId>
-  <version>1.0.0</version>
+  <version>0.1.0</version>
 
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
@@ -27,10 +27,25 @@
           <artifactId>sqlite-jdbc</artifactId>
           <version>3.50.3.0</version>
       </dependency>
+      <dependency>
+          <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter</artifactId>
+          <version>5.11.4</version>
+          <scope>test</scope>
+      </dependency>
   </dependencies>
 
   <build>
     <plugins>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+        <configuration>
+          <argLine>--enable-native-access=ALL-UNNAMED</argLine>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

@@ -13,7 +13,7 @@ echo "==> Cleaning previous builds"
 mvn -f "$project_root/pom.xml" clean -q
 
 echo "==> Compiling + packaging (creates fat JAR)"
-mvn -f "$project_root/pom.xml" package -q
+mvn -f "$project_root/pom.xml" package -q -DskipTests
 
 echo "==> Generating JavaDocs"
 mvn -f "$project_root/pom.xml" javadoc:javadoc -q

@@ -11,7 +11,7 @@ Write-Host "==> Cleaning previous builds"
 & mvn -f "$projectRoot\pom.xml" clean -q
 
 Write-Host "==> Compiling + packaging (creates fat JAR)"
-& mvn -f "$projectRoot\pom.xml" package -q
+& mvn -f "$projectRoot\pom.xml" package -q -DskipTests
 
 Write-Host "==> Generating JavaDocs"
 & mvn -f "$projectRoot\pom.xml" javadoc:javadoc -q
