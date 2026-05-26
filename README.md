@@ -91,10 +91,10 @@ Prefer the script.
 
 - [x] DB Models
 - [x] DAOs
-- [] Services
+- [ ] Services
     - Missing: `BookingService` and `RatingService`
 
 - [x] Admin Panel
     - Note: Needs rework
 
-- [] UI
+- [ ] UI
