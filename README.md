@@ -11,11 +11,12 @@
 - IDE: use whatever but remember to set the used JDK in the settings
 > Always import project as a `Existing Maven project`
 
-> **IDE run configuration note:** if you run the app directly from your IDE (green play button)
-> and see a warning about `java.lang.System::load`, add this to your run configuration's VM arguments:
+> **IDE run configuration note:**  
+> If you run the app directly from your IDE (green play button)
+> and see a warning about `java.lang.System::load`, add this to your run configuration's VM arguments:  
 > `--enable-native-access=ALL-UNNAMED`
-> (IntelliJ: Run > Edit Configurations > VM options. Eclipse: Run Configurations > Arguments > VM arguments)
-> This is not needed when running via Maven (`mvn exec:java`) as it is already set in `.mvn/jvm.config`.
+> IntelliJ: Run > Edit Configurations > VM options.  
+> Eclipse: Run Configurations > Arguments > VM arguments  
 
 If you prefer the terminal:
 
@@ -30,14 +31,19 @@ mvn compile
 mvn exec:java
 ```
 
-Our Stack so far:  
+## Tech Stack
 
-Backend:  
-Sqlite  
-JDBC  
+| Layer    | Technology                                     |
+|----------|------------------------------------------------|
+| Language | Java 25                                        |
+| Build    | Maven (shade, surefire, javadoc, exec plugins) |
+| Database | SQLite via JDBC                                |
+| UI       | JavaFX (planned)                               |
+| Testing  | JUnit 5                                        |
+| CI/CD    | GitHub Actions                                 |
 
-Frontend:  
-JavaFX  
+**Architecture:** Models → DAOs → Services (planned) → JavaFX UI (planned)  
+No frameworks; pure Java OOP.
 
 ## JavaDoc
 
