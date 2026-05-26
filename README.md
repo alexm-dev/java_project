@@ -48,16 +48,15 @@ java -jar /target/ShareSpace-X.Y.Z.jar
 
 ## Tech Stack
 
-| Layer      | Technology                                     |
-|------------|------------------------------------------------|
-| Language   | Java 25                                        |
-| Build      | Maven (shade, surefire, javadoc, exec plugins) |
-| Database   | SQLite via JDBC                                |
-| Encryption | BCrypt (jbcrypt) password hashing              |
-| JSON       | Jackson (asset metadata serialization)         |
-| UI         | JavaFX (planned)                               |
-| Testing    | JUnit 5                                        |
-| CI/CD      | GitHub Actions                                 |
+| Layer      | Technology                             |
+|------------|----------------------------------------|
+| Language   | Java 25                                |
+| Build      | Maven (shade, javadoc, exec plugins)   |
+| Database   | SQLite via JDBC                        |
+| Encryption | BCrypt (jbcrypt) password hashing      |
+| JSON       | Jackson (asset metadata serialization) |
+| UI         | JavaFX (planned)                       |
+| CI/CD      | GitHub Actions                         |
 
 **Architecture:** DB Models -> DAOs -> Services -> JavaFX UI (planned)  
 
