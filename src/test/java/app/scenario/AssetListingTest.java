@@ -1,18 +1,8 @@
 package app.scenario;
 
-import app.dao.AssetDAO;
-import app.dao.CategoryDAO;
-import app.dao.LocationDAO;
-import app.dao.SubCategoryDAO;
-import app.dao.UserDAO;
-import app.dao.UserRoleDAO;
+import app.dao.*;
 import app.database.Database;
-import app.model.Asset;
-import app.model.Category;
-import app.model.Location;
-import app.model.SubCategory;
-import app.model.User;
-import app.model.UserRole;
+import app.model.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,27 +20,27 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AssetListingTest {
 
-    private static final String ANNA_EMAIL   = "anna.listing.scenario@sharespace.test";
-    private static final String TEST_CAT     = "Test Category (AssetListing)";
-    private static final String TEST_SUBCAT  = "Test SubCategory (AssetListing)";
+    private static final String ANNA_EMAIL = "anna.listing.scenario@sharespace.test";
+    private static final String TEST_CAT = "Test Category (AssetListing)";
+    private static final String TEST_SUBCAT = "Test SubCategory (AssetListing)";
 
-    private UserDAO        userDAO;
-    private LocationDAO    locDAO;
-    private AssetDAO       assetDAO;
-    private UserRoleDAO    urDAO;
-    private CategoryDAO    catDAO;
+    private UserDAO userDAO;
+    private LocationDAO locDAO;
+    private AssetDAO assetDAO;
+    private UserRoleDAO urDAO;
+    private CategoryDAO catDAO;
     private SubCategoryDAO subCatDAO;
-    private SubCategory    subCat;
+    private SubCategory subCat;
 
     @BeforeAll
     void init() {
         Database.initialize();
-        userDAO    = new UserDAO();
-        locDAO     = new LocationDAO();
-        assetDAO   = new AssetDAO();
-        urDAO      = new UserRoleDAO();
-        catDAO     = new CategoryDAO();
-        subCatDAO  = new SubCategoryDAO();
+        userDAO = new UserDAO();
+        locDAO = new LocationDAO();
+        assetDAO = new AssetDAO();
+        urDAO = new UserRoleDAO();
+        catDAO = new CategoryDAO();
+        subCatDAO = new SubCategoryDAO();
 
         // ensure test category + sub-category exist (create only if missing)
         if (catDAO.findByName(TEST_CAT) == null) {
@@ -82,7 +72,10 @@ class AssetListingTest {
             assetDAO.findByOwnerId(existing.getId()).forEach(a -> {
                 Location l = locDAO.findById(a.getAssetLocationId());
                 assetDAO.delete(a.getId());
-                if (l != null) locDAO.delete(l.getId());
+
+                if (l != null) { 
+                    locDAO.delete(l.getId());
+                }
             });
             urDAO.findByUserId(existing.getId())
                 .forEach(ur -> urDAO.delete(ur.getUserId(), ur.getRoleId()));

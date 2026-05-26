@@ -1,23 +1,8 @@
 package app.scenario;
 
-import app.dao.AssetDAO;
-import app.dao.BookingDAO;
-import app.dao.CategoryDAO;
-import app.dao.LocationDAO;
-import app.dao.RatingDAO;
-import app.dao.RoleDAO;
-import app.dao.SubCategoryDAO;
-import app.dao.UserDAO;
-import app.dao.UserRoleDAO;
+import app.dao.*;
 import app.database.Database;
-import app.model.Asset;
-import app.model.Booking;
-import app.model.Category;
-import app.model.Location;
-import app.model.Rating;
-import app.model.SubCategory;
-import app.model.User;
-import app.model.UserRole;
+import app.model.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -110,8 +95,6 @@ class BookingFlowTest {
         }
     }
 
-    // ----- helpers -----
-
     private User createAnna() {
         User anna = new User("Anna Lender", ANNA_EMAIL, "hash");
         anna.setStatus("active");
@@ -136,8 +119,6 @@ class BookingFlowTest {
         assetDAO.create(cam);
         return cam;
     }
-
-    // ----- tests -----
 
     @Test
     void renter_canBookAvailableAsset() {
