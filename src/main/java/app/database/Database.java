@@ -33,24 +33,6 @@ public class Database {
         executeScript(conn, "/seed.sql");
     }
 
-    private static void executeScript(Connection conn, String resourcePath) {
-        try (InputStream is = Database.class.getResourceAsStream(resourcePath)) {
-            if (is == null) { 
-                throw new RuntimeException(resourcePath + " not found in classpath");
-            }
-
-            String sql = new String(is.readAllBytes());
-            for (String statement : sql.split(";")) {
-                String trimmed = statement.trim();
-                if (!trimmed.isEmpty()) {
-                    conn.createStatement().execute(trimmed);
-                }
-            }
-        } catch (IOException | SQLException e) {
-            throw new RuntimeException("Failed to execute " + resourcePath, e);
-        }
-    }
-
     /**
      * getConnection method to provide a singleton DB connection.
      */
@@ -68,5 +50,23 @@ public class Database {
             }
         }
         return connection;
+    }
+
+    private static void executeScript(Connection conn, String resourcePath) {
+        try (InputStream is = Database.class.getResourceAsStream(resourcePath)) {
+            if (is == null) { 
+                throw new RuntimeException(resourcePath + " not found in classpath");
+            }
+
+            String sql = new String(is.readAllBytes());
+            for (String statement : sql.split(";")) {
+                String trimmed = statement.trim();
+                if (!trimmed.isEmpty()) {
+                    conn.createStatement().execute(trimmed);
+                }
+            }
+        } catch (IOException | SQLException e) {
+            throw new RuntimeException("Failed to execute " + resourcePath, e);
+        }
     }
 }

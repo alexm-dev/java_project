@@ -103,6 +103,3 @@ CREATE TABLE IF NOT EXISTS ratings (
     FOREIGN KEY (rated_user_id) REFERENCES users(id)    ON DELETE RESTRICT
 );
 
--- seed roles
-INSERT INTO roles (name) SELECT 'lender' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'lender');
-INSERT INTO roles (name) SELECT 'renter' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'renter');
