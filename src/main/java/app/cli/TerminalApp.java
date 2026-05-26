@@ -1,34 +1,46 @@
 package app.cli;
 
-import app.model.User;
-import app.service.UserService;
-import app.util.Logger;
-import app.util.PasswordHasher;
+import app.model.*;
+import app.service.*;
+import app.util.*;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
  * CLI testbed for ShareSpace before the JavaFX UI is built.
- * Lets you exercise UserService and inspect the DB via the admin panel.
+ *
+ * Mirrors the planned UI for basic functionallity of sharespace.
+ * Will be removed once JavaFX UI is ready.
  */
 public class TerminalApp {
 
     private final Scanner scanner = new Scanner(System.in);
     private final UserService userService = new UserService();
+    private final AssetService assetService = new AssetService();
+    private final CatalogService catalogService = new CatalogService();
+    private final SessionService session;
     private final AdminMenu adminMenu;
 
-    // local session - will move into SessionService once that exists
-    private User currentUser = null;
-
-    public TerminalApp() {
+    public TerminalApp(SessionService session) {
+        this.session = session;
         this.adminMenu = new AdminMenu(scanner);
     }
 
+    /**
+     * Run the Termainl UI.
+     * Loops until user exits, handles all exceptions to avoid crashing.
+     */
     public void run() {
         System.out.println("ShareSpace CLI");
+        if (session.isLoggedIn()) {
+            System.out.println("welcome back " + session.getActiveUser().getUsername());
+        }
         while (true) {
             try {
-                if (currentUser == null) guestMenu();
+                if (!session.isLoggedIn()) guestMenu();
                 else loggedInMenu();
             } catch (Exception e) {
                 Logger.error("menu error", e);
@@ -41,7 +53,7 @@ public class TerminalApp {
         System.out.println("[guest menu]");
         System.out.println("1. Register");
         System.out.println("2. Login");
-        System.out.println("3. Browse assets (not yet)");
+        System.out.println("3. Browse assets");
         System.out.println("4. Admin / Debug");
         System.out.println("9. Toggle debug logs (" + (Logger.isDebug() ? "ON" : "OFF") + ")");
         System.out.println("0. Exit");
@@ -49,7 +61,7 @@ public class TerminalApp {
         switch (prompt()) {
             case "1" -> register();
             case "2" -> login();
-            case "3" -> System.out.println("AssetService not implemented yet.");
+            case "3" -> browseAssets();
             case "4" -> adminMenu.run();
             case "9" -> toggleDebug();
             case "0" -> exit();
@@ -58,18 +70,20 @@ public class TerminalApp {
     }
 
     private void loggedInMenu() {
+        User me = session.getActiveUser();
         System.out.println();
-        System.out.println("[" + currentUser.getUsername() + "]");
+        System.out.println("[" + me.getUsername() + "]");
         System.out.println("1. View profile");
         System.out.println("2. Change username");
         System.out.println("3. Change email");
         System.out.println("4. Change password");
         System.out.println("5. Manage roles (not yet)");
         System.out.println("6. Delete account");
-        System.out.println("7. My listings (not yet)");
+        System.out.println("7. My listings");
         System.out.println("8. My bookings (not yet)");
         System.out.println("9. Toggle debug logs (" + (Logger.isDebug() ? "ON" : "OFF") + ")");
         System.out.println("a. Admin / Debug");
+        System.out.println("b. Browse assets");
         System.out.println("l. Logout");
         System.out.println("0. Exit");
 
@@ -80,10 +94,11 @@ public class TerminalApp {
             case "4" -> changePassword();
             case "5" -> System.out.println("not yet integrated, use admin panel");
             case "6" -> deleteAccount();
-            case "7" -> System.out.println("AssetService not implemented yet.");
+            case "7" -> myListingsMenu();
             case "8" -> System.out.println("BookingService not implemented yet.");
             case "9" -> toggleDebug();
             case "a" -> adminMenu.run();
+            case "b" -> browseAssets();
             case "l" -> logout();
             case "0" -> exit();
             default -> System.out.println("unknown option");
@@ -95,7 +110,15 @@ public class TerminalApp {
         String username = scanner.nextLine().trim();
         System.out.print("Email: ");
         String email = scanner.nextLine().trim();
+        if (!EmailValidator.isValid(email)) {
+            System.out.println("invalid email format");
+            return;
+        }
         char[] password = readPassword("Password: ");
+        if (!PasswordValidator.isValid(password)) {
+            System.out.println(PasswordValidator.RULES);
+            return;
+        }
 
         Logger.debug("register attempt: " + email);
         User user = userService.register(username, email, password);
@@ -113,38 +136,43 @@ public class TerminalApp {
         char[] password = readPassword("Password: ");
 
         Logger.debug("login attempt: " + email);
-        User user = userService.findByEmail(email);
-        if (user == null || !PasswordHasher.verify(password, user.getPasswordHash())) {
+        User user = session.login(email, password);
+        if (user == null) {
             System.out.println("invalid email or password");
             Logger.warn("failed login: " + email);
             return;
         }
-        currentUser = user;
         System.out.println("welcome " + user.getUsername());
         Logger.info("user logged in: id=" + user.getId());
     }
 
     private void logout() {
-        Logger.info("user logged out: id=" + currentUser.getId());
-        currentUser = null;
+        int id = session.getActiveUser().getId();
+        session.logout();
         System.out.println("logged out");
+        Logger.info("user logged out: id=" + id);
     }
 
     private void viewProfile() {
-        currentUser = userService.findById(currentUser.getId());
-        System.out.println("id: " + currentUser.getId());
-        System.out.println("username: " + currentUser.getUsername());
-        System.out.println("email: " + currentUser.getEmail());
-        System.out.println("status: " + currentUser.getStatus());
-        System.out.println("joined: " + currentUser.getCreatedTime());
+        session.refreshActiveUser();
+        User me = session.getActiveUser();
+
+        System.out.println("id: " + me.getId());
+        System.out.println("username: " + me.getUsername());
+        System.out.println("email: " + me.getEmail());
+        System.out.println("status: " + me.getStatus());
+        System.out.println("joined: " + me.getCreatedTime());
     }
 
     private void changeUsername() {
         System.out.print("New username: ");
         String newName = scanner.nextLine().trim();
-        if (userService.updateUsername(currentUser.getId(), newName)) {
+
+        int id = session.getActiveUser().getId();
+        if (userService.updateUsername(id, newName)) {
+            session.refreshActiveUser();
             System.out.println("ok");
-            Logger.info("username changed: id=" + currentUser.getId());
+            Logger.info("username changed: id=" + id);
         } else {
             System.out.println("failed - username taken");
         }
@@ -153,9 +181,17 @@ public class TerminalApp {
     private void changeEmail() {
         System.out.print("New email: ");
         String newEmail = scanner.nextLine().trim();
-        if (userService.updateEmail(currentUser.getId(), newEmail)) {
+
+        if (!EmailValidator.isValid(newEmail)) {
+            System.out.println("invalid email format");
+            return;
+        }
+
+        int id = session.getActiveUser().getId();
+        if (userService.updateEmail(id, newEmail)) {
+            session.refreshActiveUser();
             System.out.println("ok");
-            Logger.info("email changed: id=" + currentUser.getId());
+            Logger.info("email changed: id=" + id);
         } else {
             System.out.println("failed - email taken");
         }
@@ -163,16 +199,23 @@ public class TerminalApp {
 
     private void changePassword() {
         char[] oldPwd = readPassword("Current password: ");
-        User fresh = userService.findById(currentUser.getId());
-        if (!PasswordHasher.verify(oldPwd, fresh.getPasswordHash())) {
+        if (!session.verifyActivePassword(oldPwd)) {
             System.out.println("wrong password");
-            Logger.warn("password change failed: id=" + currentUser.getId());
+            Logger.warn("password change failed: id=" + session.getActiveUser().getId());
             return;
         }
+
         char[] newPwd = readPassword("New password: ");
-        userService.updatePassword(currentUser.getId(), newPwd);
+        if (!PasswordValidator.isValid(newPwd)) {
+            System.out.println(PasswordValidator.RULES);
+            return;
+        }
+
+        int id = session.getActiveUser().getId();
+        userService.updatePassword(id, newPwd);
+        session.refreshActiveUser();
         System.out.println("password updated");
-        Logger.info("password changed: id=" + currentUser.getId());
+        Logger.info("password changed: id=" + id);
     }
 
     private void deleteAccount() {
@@ -181,11 +224,295 @@ public class TerminalApp {
             System.out.println("cancelled");
             return;
         }
-        int id = currentUser.getId();
+        int id = session.getActiveUser().getId();
         userService.deleteAccount(id);
-        currentUser = null;
+        session.logout();
         System.out.println("account deleted");
         Logger.info("account deleted: id=" + id);
+    }
+
+    private void browseAssets() {
+        List<Category> categories = catalogService.getAllCategories();
+        if (categories.isEmpty()) {
+            System.out.println("no categories yet (admin needs to seed them)");
+            return;
+        }
+        System.out.println();
+        System.out.println("[categories]");
+        for (Category c : categories) {
+            System.out.println(c.getId() + ". " + c.getName()
+                + (c.getDescription() != null ? " - " + c.getDescription() : ""));
+        }
+        Integer categoryId = promptInt("Pick category id (0 = back): ");
+        if (categoryId == null || categoryId == 0) return;
+
+        browseSubCategories(categoryId);
+    }
+
+    private void browseSubCategories(int categoryId) {
+        List<SubCategory> subs = catalogService.getSubCategoriesByCategoryId(categoryId);
+        if (subs.isEmpty()) {
+            System.out.println("no sub-categories in this category");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("[sub-categories]");
+        for (SubCategory s : subs) {
+            System.out.println(s.getId() + ". " + s.getName());
+        }
+
+        Integer subId = promptInt("Pick sub-category id (0 = back): ");
+        if (subId == null || subId == 0) return;
+
+        showAssetsInSubCategory(subId);
+    }
+
+    private void showAssetsInSubCategory(int subCategoryId) {
+        List<Asset> assets = catalogService.getAssetsBySubCategory(subCategoryId);
+        if (assets.isEmpty()) {
+            System.out.println("no listings in this sub-category");
+            return;
+        }
+        System.out.println();
+        System.out.println("[listings]");
+        for (Asset a : assets) {
+            System.out.println("id=" + a.getId()
+                + " | " + a.getModel()
+                + " | " + a.getCondition()
+                + " | " + a.getDailyRate() + "/day"
+                + " | owner=" + a.getOwnerId());
+            printAssetDetails(a);
+        }
+    }
+
+    private void printAssetDetails(Asset a) {
+        Location loc = assetService.findLocationById(a.getAssetLocationId());
+        if (loc != null) {
+            System.out.println("  location: " + formatLocation(loc));
+        }
+        if (a.getDescription() != null && !a.getDescription().isBlank()) {
+            System.out.println("  " + a.getDescription());
+        }
+        Map<String, String> meta = MetadataUtil.parse(a.getMetadata());
+        for (Map.Entry<String, String> e : meta.entrySet()) {
+            System.out.println("  " + e.getKey() + ": " + e.getValue());
+        }
+    }
+
+    private String formatLocation(Location l) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(l.getStreetAddress()).append(", ");
+        sb.append(l.getPostalCode()).append(" ").append(l.getCity());
+        if (l.getDistrict() != null && !l.getDistrict().isBlank()) {
+            sb.append(" (").append(l.getDistrict()).append(")");
+        }
+        sb.append(", ").append(l.getCountry());
+        return sb.toString();
+    }
+
+    private void myListingsMenu() {
+        while (true) {
+            System.out.println();
+            System.out.println("[my listings]");
+            System.out.println("1. View my listings");
+            System.out.println("2. Add new listing");
+            System.out.println("3. Update a listing");
+            System.out.println("4. Delete a listing");
+            System.out.println("0. Back");
+
+            switch (prompt()) {
+                case "1" -> listMyAssets();
+                case "2" -> createListing();
+                case "3" -> updateListing();
+                case "4" -> deleteListing();
+                case "0" -> { return; }
+                default -> System.out.println("unknown option");
+            }
+        }
+    }
+
+    private void listMyAssets() {
+        int ownerId = session.getActiveUser().getId();
+        List<Asset> mine = assetService.findByOwner(ownerId);
+        if (mine.isEmpty()) {
+            System.out.println("no listings yet");
+            return;
+        }
+        for (Asset a : mine) {
+            System.out.println("id=" + a.getId()
+                + " | " + a.getModel()
+                + " | " + a.getCondition()
+                + " | " + a.getDailyRate() + "/day"
+                + " | subCat=" + a.getSubCategoryId());
+            printAssetDetails(a);
+        }
+    }
+
+    private void createListing() {
+        System.out.println("(use Admin / Debug to look up sub-category ids)");
+        Integer subCategoryId = promptInt("Sub-category id: ");
+
+        if (subCategoryId == null) {
+            return;
+        }
+
+        SubCategory sub = catalogService.getSubCategoryById(subCategoryId);
+        if (sub == null) {
+            System.out.println("sub-category not found");
+            return;
+        }
+        System.out.print("Model: ");
+        String model = scanner.nextLine().trim();
+
+        System.out.print("Description: ");
+        String description = scanner.nextLine().trim();
+
+        System.out.print("Condition: ");
+        String condition = scanner.nextLine().trim();
+
+        Double dailyRate = promptDouble("Daily rate: ");
+        if (dailyRate == null) { 
+            return;
+        }
+
+        String metadata = promptMetadata(sub.getName(), null);
+
+        System.out.print("City: ");
+        String city = scanner.nextLine().trim();
+
+        System.out.print("Postal code: ");
+        String postalCode = scanner.nextLine().trim();
+
+        System.out.print("District (blank = none): ");
+        String district = scanner.nextLine().trim();
+        if (district.isEmpty()) district = null;
+
+        System.out.print("Street address: ");
+        String streetAddress = scanner.nextLine().trim();
+
+        System.out.print("Country: ");
+        String country = scanner.nextLine().trim();
+
+        int ownerId = session.getActiveUser().getId();
+        Asset asset = new Asset(ownerId, subCategoryId, model, description, condition, 0, dailyRate);
+        asset.setMetadata(metadata);
+        Location loc = new Location(city, postalCode, district, streetAddress, country);
+
+        Asset created = assetService.createAsset(asset, loc);
+        if (created == null) {
+            System.out.println("failed to create listing");
+            return;
+        }
+        System.out.println("created listing id=" + created.getId());
+        Logger.info("asset created: id=" + created.getId() + " owner=" + ownerId);
+    }
+
+    private void updateListing() {
+        Integer id = promptInt("Asset id to update: ");
+        if (id == null) return;
+        Asset existing = assetService.findById(id);
+        if (existing == null) {
+            System.out.println("not found");
+            return;
+        }
+        int me = session.getActiveUser().getId();
+        if (existing.getOwnerId() != me) {
+            System.out.println("not your listing");
+            return;
+        }
+
+        existing.setModel(promptOrKeep("Model", existing.getModel()));
+        existing.setDescription(promptOrKeep("Description", existing.getDescription()));
+        existing.setCondition(promptOrKeep("Condition", existing.getCondition()));
+
+        System.out.print("Daily rate [" + existing.getDailyRate() + "]: ");
+        String rate = scanner.nextLine().trim();
+        if (!rate.isEmpty()) {
+            try { existing.setDailyRate(Double.parseDouble(rate)); }
+            catch (NumberFormatException e) { System.out.println("bad number, kept old"); }
+        }
+
+        SubCategory sub = catalogService.getSubCategoryById(existing.getSubCategoryId());
+        if (sub != null) {
+            Map<String, String> current = MetadataUtil.parse(existing.getMetadata());
+            existing.setMetadata(promptMetadata(sub.getName(), current));
+        }
+
+        if (assetService.updateAsset(existing, me)) {
+            System.out.println("ok");
+            Logger.info("asset updated: id=" + id);
+        } else {
+            System.out.println("update failed");
+        }
+    }
+
+    private String promptMetadata(String subCategoryName, Map<String, String> existing) {
+        List<String> keys = MetadataSchema.keysFor(subCategoryName);
+        if (keys.isEmpty()) {
+            System.out.println("(no metadata schema for " + subCategoryName + ", skipping)");
+            return existing == null ? null : MetadataUtil.serialize(existing);
+        }
+        Map<String, String> map = new LinkedHashMap<>();
+        if (existing != null) map.putAll(existing);
+
+        System.out.println("metadata for " + subCategoryName + " (blank = keep / skip):");
+        for (String key : keys) {
+            String current = map.get(key);
+            System.out.print("  " + key + (current != null ? " [" + current + "]" : "") + ": ");
+            String value = scanner.nextLine().trim();
+            if (!value.isEmpty()) map.put(key, value);
+        }
+        return MetadataUtil.serialize(map);
+    }
+
+    private void deleteListing() {
+        Integer id = promptInt("Asset id to delete: ");
+        if (id == null) return;
+        System.out.print("Type DELETE to confirm: ");
+
+        if (!"DELETE".equals(scanner.nextLine().trim())) {
+            System.out.println("cancelled");
+            return;
+        }
+ 
+        int me = session.getActiveUser().getId();
+        if (assetService.deleteAsset(id, me)) {
+            System.out.println("deleted");
+            Logger.info("asset deleted: id=" + id);
+        } else {
+            System.out.println("not found or not your listing");
+        }
+    }
+
+    // Prompt helpers
+
+    private String promptOrKeep(String label, String current) {
+        System.out.print(label + " [" + current + "]: ");
+        String input = scanner.nextLine();
+        return input.isEmpty() ? current : input;
+    }
+
+    private Integer promptInt(String label) {
+        System.out.print(label);
+ 
+        try {
+            return Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("bad number");
+            return null;
+        }
+    }
+
+    private Double promptDouble(String label) {
+        System.out.print(label);
+
+        try {
+            return Double.parseDouble(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("bad number");
+            return null;
+        }
     }
 
     private void toggleDebug() {
@@ -203,8 +530,6 @@ public class TerminalApp {
         return scanner.nextLine().trim();
     }
 
-    // Reads a password without echo if a real Console is attached.
-    // When running from an IDE there's no Console so fall back to Scanner.
     private char[] readPassword(String label) {
         System.out.print(label);
         if (System.console() != null) {

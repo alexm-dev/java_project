@@ -1,23 +1,7 @@
 package app.cli;
 
-import app.dao.AssetDAO;
-import app.dao.BookingDAO;
-import app.dao.CategoryDAO;
-import app.dao.LocationDAO;
-import app.dao.RatingDAO;
-import app.dao.RoleDAO;
-import app.dao.SessionDAO;
-import app.dao.SubCategoryDAO;
-import app.dao.UserDAO;
-import app.dao.UserRoleDAO;
-import app.model.Asset;
-import app.model.Booking;
-import app.model.Category;
-import app.model.Location;
-import app.model.Rating;
-import app.model.Role;
-import app.model.SubCategory;
-import app.model.User;
+import app.dao.*;
+import app.model.*;
 
 import java.util.List;
 import java.util.Scanner;
@@ -25,6 +9,8 @@ import java.util.stream.Collectors;
 
 /**
  * Read-only inspector for the DB. Uses DAOs directly since this is a debug tool.
+ *
+ * TODO: Expand to also create and delete records.
  */
 public class AdminMenu {
 
@@ -45,6 +31,9 @@ public class AdminMenu {
         this.scanner = scanner;
     }
 
+    /**
+     * Open the Admin menu loop.
+     */
     public void run() {
         while (true) {
             System.out.println();
