@@ -110,13 +110,13 @@ public class TerminalApp {
         String username = scanner.nextLine().trim();
         System.out.print("Email: ");
         String email = scanner.nextLine().trim();
-        if (!EmailValidator.isValid(email)) {
+        if (!AuthUtil.isValidEmail(email)) {
             System.out.println("invalid email format");
             return;
         }
         char[] password = readPassword("Password: ");
-        if (!PasswordValidator.isValid(password)) {
-            System.out.println(PasswordValidator.RULES);
+        if (!AuthUtil.isValidPassword(password)) {
+            System.out.println(AuthUtil.PASSWORD_RULES);
             return;
         }
 
@@ -182,7 +182,7 @@ public class TerminalApp {
         System.out.print("New email: ");
         String newEmail = scanner.nextLine().trim();
 
-        if (!EmailValidator.isValid(newEmail)) {
+        if (!AuthUtil.isValidEmail(newEmail)) {
             System.out.println("invalid email format");
             return;
         }
@@ -206,8 +206,8 @@ public class TerminalApp {
         }
 
         char[] newPwd = readPassword("New password: ");
-        if (!PasswordValidator.isValid(newPwd)) {
-            System.out.println(PasswordValidator.RULES);
+        if (!AuthUtil.isValidPassword(newPwd)) {
+            System.out.println(AuthUtil.PASSWORD_RULES);
             return;
         }
 

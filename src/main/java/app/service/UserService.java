@@ -4,9 +4,7 @@ import app.dao.UserDAO;
 import app.dao.UserRoleDAO;
 import app.model.User;
 import app.model.UserRole;
-import app.util.EmailValidator;
-import app.util.PasswordHasher;
-import app.util.PasswordValidator;
+import app.util.AuthUtil;
 
 /**
  * Handles user registration, profile management, password updates and role assignment.
@@ -32,11 +30,11 @@ public class UserService {
      * @return the created User with its generated id, or null if registration failed
      */
     public User register(String username, String email, char[] plainPassword) {
-        if (!EmailValidator.isValid(email)){
+        if (!AuthUtil.isValidEmail(email)){
             return null;
         }
 
-        if (!PasswordValidator.isValid(plainPassword)) {
+        if (!AuthUtil.isValidPassword(plainPassword)) {
             return null;
         }
 
@@ -48,7 +46,7 @@ public class UserService {
             return null;
         }
 
-        User user = new User(username, email, PasswordHasher.hash(plainPassword));
+        User user = new User(username, email, AuthUtil.hashPassword(plainPassword));
         user.setStatus("active");
         return userDAO.create(user) ? user : null;
     }
@@ -82,7 +80,7 @@ public class UserService {
      * @return true if updated, false if the user was not found or the email is taken
      */
     public boolean updateEmail(int userId, String newEmail) {
-        if (!EmailValidator.isValid(newEmail)) { 
+        if (!AuthUtil.isValidEmail(newEmail)) { 
             return false;
         }
 
@@ -148,7 +146,7 @@ public class UserService {
      * @return true if updated, false if the user was not found
      */
     public boolean updatePassword(int userId, char[] plainPassword) {
-        if (!PasswordValidator.isValid(plainPassword)) { 
+        if (!AuthUtil.isValidPassword(plainPassword)) { 
             return false;
         }
         User user = userDAO.findById(userId);
@@ -156,7 +154,7 @@ public class UserService {
             return false;
         }
 
-        user.setPasswordHash(PasswordHasher.hash(plainPassword));
+        user.setPasswordHash(AuthUtil.hashPassword(plainPassword));
         return userDAO.update(user);
     }
 

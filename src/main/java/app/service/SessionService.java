@@ -3,7 +3,7 @@ package app.service;
 import app.dao.SessionDAO;
 import app.dao.UserDAO;
 import app.model.User;
-import app.util.PasswordHasher;
+import app.util.AuthUtil;
 
 import java.util.Arrays;
 
@@ -47,7 +47,7 @@ public class SessionService {
     public User login(String email, char[] plainPassword) {
         User user = userDAO.findByEmail(email);
 
-        if (user == null || !PasswordHasher.verify(plainPassword, user.getPasswordHash())) {
+        if (user == null || !AuthUtil.verifyPassword(plainPassword, user.getPasswordHash())) {
             return null;
         }
 
@@ -109,6 +109,6 @@ public class SessionService {
             return false;
         }
 
-        return PasswordHasher.verify(plain, fresh.getPasswordHash());
+        return AuthUtil.verifyPassword(plain, fresh.getPasswordHash());
     }
 }
