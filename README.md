@@ -1,5 +1,23 @@
 # ShareSpace
 
+## TODOs
+
+- [x] DB Models
+- [x] DAOs
+- [ ] Services
+    - Missing: `BookingService` and `RatingService`
+
+- [ ] Logger
+    - Note: Add a Logger framework
+
+- [ ] UI
+    - Note: Admin Panel would need a dedicated UI panel
+
+TerminalApp.java is a temporary testing field to testout the business logic without any UI.
+After we implement a working UI, then we should remove the CLI package.
+
+The AdminMenu.java would also need to be switched to an UI panel version and be removed as a CLI package.
+
 ## Environment setup:
 
 - JDK: use either temurin or OpenJDK. Needs to be version 25
@@ -85,15 +103,3 @@ Download the action workflow artifact from the the [Java CI Maven](https://githu
 Click on the most recent commit and then download the `ShareSpace-submission`.
 
 Prefer the script.
-
-## TODOs
-
-- [x] DB Models
-- [x] DAOs
-- [ ] Services
-    - Missing: `BookingService` and `RatingService`
-
-- [x] Admin Panel
-    - Note: Needs rework
-
-- [ ] UI
