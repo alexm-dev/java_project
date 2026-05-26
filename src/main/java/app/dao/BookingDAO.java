@@ -98,6 +98,8 @@ public class BookingDAO extends BaseDAO<Booking, Integer> {
      * @param booking Must have its id set.
      * @return true if a row was updated, false if not found.
      */
+    // TODO: BookingService should guard the status transitions (pending -> confirmed -> completed / cancelled).
+    // Right now this happily sets any status string, which we dont want once the UI is wired in.
     @Override
     public boolean update(Booking booking) {
         String sql = "UPDATE bookings SET status = ?, total_cost = ?, updated_time = CURRENT_TIMESTAMP WHERE id = ?";

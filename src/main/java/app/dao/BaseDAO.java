@@ -10,17 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Abstract base class for Data Access Objects, following the Template Method pattern.
+ * Shared base for the DAOs. Each subclass hands over its table name, its
+ * column list and a mapRow, and gets findById, findAll and delete for free.
+ * create and update stay abstract since the SQL is different for every table.
  *
- * Concrete subclasses provide three hooks (tableName, selectColumns, mapRow)
- * and the standard findById, findAll, and delete operations are implemented
- * here generically.
- *
- * Write operations (create and update) remain abstract because their SQL and
- * parameter bindings vary per table.
- *
- * @param <T>  the entity type this DAO manages
- * @param <ID> the entity's primary key type
+ * @param <T>  the entity type
+ * @param <ID> the primary key type
  */
 public abstract class BaseDAO<T, ID> {
 

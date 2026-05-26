@@ -56,6 +56,7 @@ public class UserDAO extends BaseDAO<User, Integer> {
      */
     @Override
     public boolean create(User user) {
+        // TODO: UserService will hash the plaintext password before calling this, never insert raw passwords here
         String sql = "INSERT INTO users (username, email, password_hash, status) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, user.getUsername());

@@ -110,6 +110,7 @@ public class LocationDAO extends BaseDAO<Location, Integer> {
      * Looks for an existing location row matching city, postal_code, street_address and country.
      * District is ignored since it is optional. Returns null if nothing matches.
      */
+    // TODO: AssetService will use this inside a findOrCreate so we dont end up with duplicate locations
     public Location findMatch(Location location) {
         String sql = "SELECT id, city, postal_code, district, street_address, country " +
             "FROM locations " +

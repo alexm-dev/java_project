@@ -69,6 +69,7 @@ public class RatingDAO extends BaseDAO<Rating, Integer> {
      */
     @Override
     public boolean create(Rating rating) {
+        // TODO: RatingService must verify the booking is in 'completed' status before letting this through
         String sql = "INSERT INTO ratings "
                    + "(booking_id, reviewer_id, rated_user_id, rating, comment) "
                    + "VALUES (?, ?, ?, ?, ?)";

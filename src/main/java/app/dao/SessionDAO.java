@@ -15,6 +15,7 @@ import java.sql.SQLException;
  * apply. The methods here let SessionService persist who was last logged in
  * so the app can restore the session on the next startup.
  */
+// TODO: SessionService.restoreSession() at startup will call getActiveUserId() and load the User from UserDAO
 public class SessionDAO {
 
     /** The id used for the single session row. The schema enforces this with CHECK (id = 1). */
